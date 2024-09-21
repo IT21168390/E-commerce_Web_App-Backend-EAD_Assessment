@@ -1,4 +1,10 @@
+using E_commerce_Web_App_Backend_Services.models;
+using E_commerce_Web_App_Backend_Services.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
+builder.Services.AddSingleton<MongoDBService>();
 
 // Add services to the container.
 
