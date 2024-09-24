@@ -1,16 +1,15 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
 
 namespace E_commerce_Web_App_Backend_Services.models
 {
     public class Notification
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
 
         [BsonElement("user_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string UserId { get; set; }
 
         [BsonElement("message")]
