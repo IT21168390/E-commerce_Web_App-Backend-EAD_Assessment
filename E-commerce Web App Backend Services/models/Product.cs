@@ -6,7 +6,7 @@ namespace E_commerce_Web_App_Backend_Services.models
     {
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [BsonElement("product_id")]
         public string ProductId { get; set; }
@@ -18,7 +18,7 @@ namespace E_commerce_Web_App_Backend_Services.models
         public string Category { get; set; }
 
         [BsonElement("vendor_id")]
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        //[BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string VendorId { get; set; }
 
         [BsonElement("price")]
@@ -46,7 +46,7 @@ namespace E_commerce_Web_App_Backend_Services.models
     public class ProductRating
     {
         [BsonElement("customer_id")]
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        //[BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string CustomerId { get; set; }
 
         [BsonElement("rating")]
