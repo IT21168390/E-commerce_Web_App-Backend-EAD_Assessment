@@ -1,19 +1,18 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
 
 namespace E_commerce_Web_App_Backend_Services.models
 {
     public class Order
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
 
         [BsonElement("order_id")]
         public string OrderId { get; set; }
 
         [BsonElement("customer_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string CustomerId { get; set; }
 
         [BsonElement("order_status")]
@@ -41,7 +40,7 @@ namespace E_commerce_Web_App_Backend_Services.models
     public class OrderItem
     {
         [BsonElement("product_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string ProductId { get; set; }
 
         [BsonElement("product_name")]
@@ -57,7 +56,7 @@ namespace E_commerce_Web_App_Backend_Services.models
     public class VendorOrderStatus
     {
         [BsonElement("vendor_id")]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string VendorId { get; set; }
 
         [BsonElement("status")]

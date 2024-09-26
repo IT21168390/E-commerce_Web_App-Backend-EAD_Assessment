@@ -1,105 +1,82 @@
 ﻿using E_commerce_Web_App_Backend_Services.Services;
-using E_commerce_Web_App_Backend_Services.models;
-using Microsoft.AspNetCore.Http;
+using E_commerce_Web_App_Backend_Services.ServicesImpl;
 using Microsoft.AspNetCore.Mvc;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace E_commerce_Web_App_Backend_Services.Controllers
 {
-    [Controller]
     [Route("api/[controller]")]
-    public class UserController : Controller
+    [ApiController]
+    public class UserController : ControllerBase
     {
-        private readonly MongoDBService _mongoDBService;
+        private readonly IUserService userService;
 
-        public UserController(MongoDBService mongoDBService)
+        public UserController(IUserService userService) 
         {
-            _mongoDBService = mongoDBService;
+            this.userService = userService;
         }
 
+        // GET: api/<UserController>
         [HttpGet]
-        public async Task<List<User>> Get() {
-            return await _mongoDBService.GetUserAsync();
+        public ActionResult<List<User>> Get()
+        {
+            return userService.Get();
         }
 
+        // GET api/<UserController>/5
+        [HttpGet("{id}")]
+        public ActionResult<User> Get(string id)
+        {
+            var user = userService.Get(id);
+
+            if (user == null)
+            {
+                return NotFound($"User with ID = {id} not found");
+            }
+
+            return user;
+        }
+
+        // POST api/<UserController>
         [HttpPost]
-        public async Task<IActionResult> Post(/*[FromBody] User user*/) {
-            User user = new User { Name = "ABC", Email = "abc@email.com", UserType = "Test"};
-            await _mongoDBService.CreateUserAsync(user);
+        public ActionResult<User> Post([FromBody] User user)
+        {
+            userService.Create(user);
+
             return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
         }
-        /*// GET: UserController
-        public ActionResult Index()
-        {
-            return View();
-        }
 
-        // GET: UserController/Details/5
-        public ActionResult Details(int id)
+        // PUT api/<UserController>/5
+        [HttpPut("{id}")]
+        public ActionResult Put(string id, [FromBody] User user)
         {
-            return View();
-        }
+            var existingUser = userService.Get(id);
 
-        // GET: UserController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: UserController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
+            if (existingUser == null)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound($"User with ID = {id} not found");
             }
-            catch
-            {
-                return View();
-            }
+
+            userService.Update(id, user);
+
+            return NoContent();
         }
 
-        // GET: UserController/Edit/5
-        public ActionResult Edit(int id)
+        // DELETE api/<UserController>/5
+        [HttpDelete("{id}")]
+        public ActionResult Delete(string id)
         {
-            return View();
-        }
+            var user = userService.Get(id);
 
-        // POST: UserController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
+            if (user == null)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound($"User with ID = {id} not found");
             }
-            catch
-            {
-                return View();
-            }
-        }
 
-        // GET: UserController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
+            userService.Remove(user.Id);
 
-        // POST: UserController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }*/
+            return Ok($"User with ID = {id} deleted");
+        }
     }
 }

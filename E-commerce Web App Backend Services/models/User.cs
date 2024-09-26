@@ -1,61 +1,59 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson;
-using System.Text.Json.Serialization;
 
 namespace E_commerce_Web_App_Backend_Services
 {
     public class User
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        public string? Id { get; set; }
 
         [BsonElement("user_type")]
-        public string UserType { get; set; } // "Administrator", "Vendor", "CSR", "Customer"
+        public string? UserType { get; set; } // "Administrator", "Vendor", "CSR", "Customer"
 
         [BsonElement("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [BsonElement("email")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [BsonElement("password")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [BsonElement("status")]
-        public string Status { get; set; } // "active", "deactivated"
+        public string? Status { get; set; } // "active", "deactivated"
 
         [BsonElement("account_created_at")]
-        public DateTime AccountCreatedAt { get; set; }
+        public DateTime? AccountCreatedAt { get; set; }
 
         // Embedded document for Vendor details
         [BsonElement("vendor_details")]
-        public VendorDetails VendorDetails { get; set; }
+        public VendorDetails? VendorDetails { get; set; }
 
         // Embedded document for Customer details
         [BsonElement("customer_details")]
-        public CustomerDetails CustomerDetails { get; set; }
+        public CustomerDetails? CustomerDetails { get; set; }
     }
 
     public class VendorDetails
     {
         [BsonElement("company_name")]
-        public string CompanyName { get; set; }
+        public string? CompanyName { get; set; }
 
         [BsonElement("vendor_rating")]
-        public double VendorRating { get; set; }
+        public double? VendorRating { get; set; }
 
         [BsonElement("products")]
-        public List<VendorProduct> Products { get; set; }
+        public List<VendorProduct>? Products { get; set; }
     }
 
     public class VendorProduct
     {
         [BsonElement("product_id")]
-        public string ProductId { get; set; }
+        public string? ProductId { get; set; }
 
         [BsonElement("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [BsonElement("rating")]
         public double Rating { get; set; }
