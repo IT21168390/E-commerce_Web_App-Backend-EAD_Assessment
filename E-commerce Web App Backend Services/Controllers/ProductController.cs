@@ -1,6 +1,7 @@
 ﻿using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 using E_commerce_Web_App_Backend_Services.ServicesImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -41,6 +42,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
         // POST api/<ProductController>
         [HttpPost("AddProduct")]
+        [Authorize(Roles = "Vendor")]
         public ActionResult<Product> Post([FromBody] Product product)
         {
             productService.AddProduct(product);
