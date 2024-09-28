@@ -14,7 +14,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         {
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
-            _inventoryCollection = database.GetCollection<Inventory>(dbSettings.Value.ProductCollectionName); // Assuming Inventory is in ProductCollectionName
+            _inventoryCollection = database.GetCollection<Inventory>(dbSettings.Value.InventoryCollectionName);
         }
 
         public async Task<IEnumerable<Inventory>> GetAllInventory()
