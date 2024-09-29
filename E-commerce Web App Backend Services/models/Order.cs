@@ -21,6 +21,9 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonElement("total_amount")]
         public double TotalAmount { get; set; }
 
+        [BsonElement("note")]
+        public string Note { get; set; }
+
         [BsonElement("shipping_address")]
         public Address ShippingAddress { get; set; }
 

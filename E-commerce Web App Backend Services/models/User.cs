@@ -9,7 +9,7 @@ namespace E_commerce_Web_App_Backend_Services
         public string? Id { get; set; }
 
         [BsonElement("user_type")]
-        public string? UserType { get; set; } // "Administrator", "Vendor", "CSR", "Customer"
+        public string? UserType { get; set; } = "Customer"; // "Administrator", "Vendor", "CSR", "Customer"
 
         [BsonElement("name")]
         public string? Name { get; set; }

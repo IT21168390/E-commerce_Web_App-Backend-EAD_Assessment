@@ -1,4 +1,5 @@
-﻿using E_commerce_Web_App_Backend_Services.models;
+﻿using E_commerce_Web_App_Backend_Services.Dto;
+using E_commerce_Web_App_Backend_Services.models;
 
 namespace E_commerce_Web_App_Backend_Services.Services
 {
@@ -6,7 +7,7 @@ namespace E_commerce_Web_App_Backend_Services.Services
     {
         List<Product> GetAllProductList();
         Product GetProductById(string id);
-        Product AddProduct(Product product);
+        Product AddProduct(ProductDTO product);
         void UpdateProductById(string id, Product product);
         void RemoveProductById(string id);
 

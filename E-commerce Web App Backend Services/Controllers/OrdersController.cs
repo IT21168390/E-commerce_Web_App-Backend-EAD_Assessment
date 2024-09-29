@@ -78,6 +78,25 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }*/
 
         // PUT api/<OrdersController>/5
+        [HttpPatch("/cancel/{id}")]
+        public async Task<IActionResult> CancelOrder(string id)
+        {
+            try
+            {
+                var cancelledOrder = await _orderService.CancelOrderAsync(id);
+                return Ok(cancelledOrder);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
+        }
+
+        // PUT api/<OrdersController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

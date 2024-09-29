@@ -1,8 +1,9 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using E_commerce_Web_App_Backend_Services.models;
+using MongoDB.Bson.Serialization.Attributes;
 
-namespace E_commerce_Web_App_Backend_Services.models
+namespace E_commerce_Web_App_Backend_Services.Dto
 {
-    public class Product
+    public class ProductDTO
     {
         [BsonId]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
@@ -21,11 +22,14 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonElement("price")]
         public double Price { get; set; }
 
+        [BsonElement("stockQuantity")]
+        public int stockQuantity { get; set; }
+
         [BsonElement("description")]
         public string Description { get; set; }
 
         [BsonElement("status")]
-        public string Status { get; set; } = "Inactive"; // "active", "deactivated"
+        public string Status { get; set; } // "active", "deactivated"
 
         [BsonElement("created_at")]
         public DateTime CreatedAt { get; set; }

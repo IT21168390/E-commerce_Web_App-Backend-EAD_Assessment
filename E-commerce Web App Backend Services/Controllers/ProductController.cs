@@ -1,4 +1,5 @@
-﻿using E_commerce_Web_App_Backend_Services.models;
+﻿using E_commerce_Web_App_Backend_Services.Dto;
+using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 using E_commerce_Web_App_Backend_Services.ServicesImpl;
 using Microsoft.AspNetCore.Authorization;
@@ -42,8 +43,8 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
         // POST api/<ProductController>
         [HttpPost("AddProduct")]
-       [Authorize(Roles = "Vendor")]
-        public ActionResult<Product> Post([FromBody] Product product)
+       //[Authorize(Roles = "Vendor")]
+        public ActionResult<Product> Post([FromBody] ProductDTO product)
         {
             productService.AddProduct(product);
 
