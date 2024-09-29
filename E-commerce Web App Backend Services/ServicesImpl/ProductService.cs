@@ -37,5 +37,20 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         {
             _products.ReplaceOne(Product => Product.Id == id, product);
         }
+
+        // Activate/Deactivate a product by Product ID
+        public void UpdateProductStatusById(string id, string status)
+        {
+            var update = Builders<Product>.Update.Set(p => p.Status, status);
+            _products.UpdateOne(p => p.Id == id, update);
+        }
+
+        // Activate/Deactivate products by Vendor ID and Category
+        public void UpdateProductsStatusByVendorAndCategory(string vendorId, string category, string status)
+        {
+            var filter = Builders<Product>.Filter.Eq(p => p.VendorId, vendorId) & Builders<Product>.Filter.Eq(p => p.Category, category);
+            var update = Builders<Product>.Update.Set(p => p.Status, status);
+            _products.UpdateMany(filter, update);
+        }
     }
 }

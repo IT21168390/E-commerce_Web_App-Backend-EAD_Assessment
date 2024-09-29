@@ -9,5 +9,8 @@ namespace E_commerce_Web_App_Backend_Services.Services
         Product AddProduct(Product product);
         void UpdateProductById(string id, Product product);
         void RemoveProductById(string id);
+
+        void UpdateProductStatusById(string id, string status);
+        void UpdateProductsStatusByVendorAndCategory(string vendorId, string category, string status);
     }
 }
