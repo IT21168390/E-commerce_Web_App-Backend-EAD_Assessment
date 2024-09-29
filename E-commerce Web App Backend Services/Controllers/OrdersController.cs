@@ -78,6 +78,13 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }*/
 
         // PUT api/<OrdersController>/5
+        [HttpPatch("/cancel/{id}")]
+        public void CancelOrder(int id)
+        {
+            
+        }
+
+        // PUT api/<OrdersController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {

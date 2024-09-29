@@ -27,9 +27,6 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonElement("description")]
         public string Description { get; set; }
 
-        [BsonElement("stock_quantity")]
-        public int StockQuantity { get; set; }
-
         [BsonElement("status")]
         public string Status { get; set; } // "active", "deactivated"
 
