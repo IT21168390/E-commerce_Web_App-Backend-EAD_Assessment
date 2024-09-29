@@ -8,15 +8,12 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("order_id")]
-        public string OrderId { get; set; }
-
         [BsonElement("customer_id")]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string CustomerId { get; set; }
 
         [BsonElement("order_status")]
-        public string OrderStatus { get; set; } // "processing", "delivered", "cancelled", etc.
+        public string OrderStatus { get; set; } = "Processing"; // "processing", "delivered", "cancelled", etc.
 
         [BsonElement("order_items")]
         public List<OrderItem> OrderItems { get; set; }
