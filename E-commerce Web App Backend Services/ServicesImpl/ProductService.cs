@@ -1,4 +1,5 @@
-﻿using E_commerce_Web_App_Backend_Services.models;
+﻿using E_commerce_Web_App_Backend_Services.Dto;
+using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 using MongoDB.Driver;
 
@@ -7,14 +8,34 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
     public class ProductService : IProductService
     {
         private readonly IMongoCollection<Product> _products;
+        private readonly IMongoCollection<Inventory> _inventory;
         public ProductService(IDatabaseSettings settings, IMongoClient mongoClient) 
         {
             var database = mongoClient.GetDatabase(settings.DatabaseName);
             _products = database.GetCollection<Product>(settings.ProductCollectionName);
+            _inventory = database.GetCollection<Inventory>(settings.InventoryCollectionName);
         }
-        public Product AddProduct(Product product)
+        public Product AddProduct(ProductDTO newProduct)
         {
+            Product product = new Product { 
+                Name = newProduct.Name, 
+                Category = newProduct.Category, 
+                VendorId = newProduct.VendorId, 
+                Description = newProduct.Description, 
+                Price = newProduct.Price, 
+                Status = newProduct.Status, 
+                CreatedAt = newProduct.CreatedAt };
+
             _products.InsertOne(product);
+            _inventory.InsertOne(
+                new Inventory {
+                    ProductId = product.Id, 
+                    VendorId = product.VendorId, 
+                    StockQuantity = newProduct.stockQuantity , 
+                    LastUpdated = DateTime.Now, 
+                    LowStockAlert = false 
+                });
+
             return product;
         }
 

@@ -6,6 +6,7 @@
         string DatabaseName { get; set; }
         string UserCollectionName { get; set; }
         string ProductCollectionName { get; set; }
+        string InventoryCollectionName { get; set; }
         string OrdersCollectionName { get; set; }
     }
 }

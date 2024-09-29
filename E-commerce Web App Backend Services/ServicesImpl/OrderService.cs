@@ -121,7 +121,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<Order> CancelOrderAsync(string orderId)
         {
             Order order = await _ordersCollection.Find(Order => Order.Id == orderId).FirstOrDefaultAsync();
-            if(order != null && (order.OrderStatus == "Dispatched" || order.OrderStatus == "Delivered"))
+            if(order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == "Delivered"))
             {
                 var update = Builders<Order>.Update
                                             .Set(o => o.OrderStatus, "Cancelled")
