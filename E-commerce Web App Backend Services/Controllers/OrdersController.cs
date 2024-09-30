@@ -50,19 +50,19 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         /// </summary>
         /// <param name="id">Order ID.</param>
         /// <returns>Order details.</returns>
-        [HttpGet("{id:length(24)}", Name = "GetOrderById")]
+        /*[HttpGet("{id:length(24)}", Name = "GetOrderById")]
         public async Task<IActionResult> GetOrderById(string id)
         {
             // Implement this method if needed
             return Ok();
-        }
+        }*/
 
         // GET: api/<OrdersController>
-        [HttpGet]
+        /*[HttpGet]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
-        }
+        }*/
 
         // GET api/<OrdersController>/5
         /*[HttpGet("{id}")]
@@ -77,8 +77,62 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         {
         }*/
 
+
+        /// <summary>
+        /// Request to cancel an existing order.
+        /// </summary>
+        /// <param name="id">Order ID.</param>
+        /// <returns>Order details with updated status.</returns>
+        [HttpPatch("request-cancel/{id}")]
+        public async Task<IActionResult> RequestCancelOrder(string id)
+        {
+            try
+            {
+                var order = await _orderService.RequestCancelOrderAsync(id);
+                return Ok(order);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Confirm the cancellation of an existing order.
+        /// </summary>
+        /// <param name="id">Order ID.</param>
+        /// <returns>Order details with updated status.</returns>
+        [HttpPatch("confirm-cancel/{id}")]
+        public async Task<IActionResult> ConfirmCancelOrder(string id)
+        {
+            try
+            {
+                var order = await _orderService.ConfirmCancelOrderAsync(id);
+                return Ok(order);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
         // PUT api/<OrdersController>/5
-        [HttpPatch("/cancel/{id}")]
+        /*[HttpPatch("/cancel/{id}")]
         public async Task<IActionResult> CancelOrder(string id)
         {
             try
@@ -94,13 +148,123 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             {
                 return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
             }
-        }
+        }*/
 
         // PUT api/<OrdersController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{id:length(24)}")]
+        public async Task<IActionResult> UpdateOrder(string id, [FromBody] UpdateOrderDto updateOrderDto)
         {
+            try
+            {
+                var updatedOrder = await _orderService.UpdateOrderAsync(id, updateOrderDto);
+                return Ok(updatedOrder);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
         }
+
+
+        [HttpPatch("deliver/{orderId}")]
+        public async Task<IActionResult> UpdateVendorOrderStatus(string orderId, [FromQuery] string vendorId, [FromQuery] string status)
+        {
+            try
+            {
+                // Call the service to update the vendor order status
+                var updatedOrder = await _orderService.UpdateVendorOrderStatusAsync(orderId, vendorId, status);
+
+                // Return the updated order
+                return Ok(updatedOrder);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors
+                return StatusCode(500, new { message = "An error occurred while updating the order status.", details = ex.Message });
+            }
+        }
+
+
+
+
+
+        /// <summary>
+        /// Gets a specific order by its ID.
+        /// </summary>
+        /// <param name="id">Order ID.</param>
+        /// <returns>The order details.</returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetOrderById(string id)
+        {
+            try
+            {
+                var order = await _orderService.GetOrderByIdAsync(id);
+                return Ok(order);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Gets all orders with optional pagination.
+        /// </summary>
+        /// <param name="pageNumber">Page number.</param>
+        /// <param name="pageSize">Number of orders per page.</param>
+        /// <returns>A list of orders.</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrders(int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var orders = await _orderService.GetAllOrdersAsync(pageNumber, pageSize);
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Gets all orders by vendor ID with optional pagination.
+        /// </summary>
+        /// <param name="vendorId">Vendor ID.</param>
+        /// <param name="pageNumber">Page number.</param>
+        /// <param name="pageSize">Number of orders per page.</param>
+        /// <returns>A list of orders associated with the vendor.</returns>
+        [HttpGet("vendor/{vendorId}")]
+        public async Task<IActionResult> GetOrdersByVendorId(string vendorId, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var orders = await _orderService.GetOrdersByVendorIdAsync(vendorId, pageNumber, pageSize);
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
+
+
 
         // DELETE api/<OrdersController>/5
         [HttpDelete("{id}")]
