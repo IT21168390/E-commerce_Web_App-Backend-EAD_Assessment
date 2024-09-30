@@ -7,5 +7,6 @@
         string UserCollectionName { get; set; }
         string ProductCollectionName { get; set; }
         string OrdersCollectionName { get; set; }
+        string NotificationCollectionName { get; set; }
     }
 }
