@@ -109,5 +109,41 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             await _ordersCollection.InsertOneAsync(order);
             return order;
         }
+
+
+        /// <summary>
+        /// Cancels an existing order if it is in the "Processing" status.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to cancel.</param>
+        /// <returns>The updated order with status set to "Cancelled".</returns>
+        /// <exception cref="ArgumentException">Thrown if the order is not in a cancellable status.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown if the order does not exist.</exception>
+        public async Task<Order> CancelOrderAsync(string orderId)
+        {
+            Order order = await _ordersCollection.Find(Order => Order.Id == orderId).FirstOrDefaultAsync();
+            if(order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == "Delivered"))
+            {
+                var update = Builders<Order>.Update
+                                            .Set(o => o.OrderStatus, "Cancelled")
+                                            .Set(o => o.UpdatedAt, DateTime.UtcNow);
+                order.OrderStatus = "Cancelled";
+                var result = await _ordersCollection.UpdateOneAsync(Order => Order.Id == orderId, update);
+                if (result.ModifiedCount == 0)
+                {
+                    throw new Exception("Failed to update the order status.");
+                }
+                // Retrieve the updated order
+                order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
+                return order;
+            }
+            else if (order != null)
+            {
+                throw new ArgumentException($"Order is already in {order.OrderStatus} status, cannot be cancelled.");
+            }
+            else
+            {
+                throw new ArgumentException($"Order not found.");
+            }
+        }
     }
 }
