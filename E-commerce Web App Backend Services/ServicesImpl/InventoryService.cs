@@ -9,12 +9,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
     public class InventoryService : IInventoryService
     {
         private readonly IMongoCollection<Inventory> _inventoryCollection;
+        private readonly IMongoCollection<Order> _orderCollection;
 
         public InventoryService(IOptions<DatabaseSettings> dbSettings)
         {
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
             _inventoryCollection = database.GetCollection<Inventory>(dbSettings.Value.InventoryCollectionName);
+            _orderCollection = database.GetCollection<Order>(dbSettings.Value.OrdersCollectionName);
         }
 
         public async Task<IEnumerable<Inventory>> GetAllInventory()
@@ -54,9 +56,12 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
         public async Task<bool> DeleteInventory(string id)
         {
+            //get the product id from the inventory collection
+            var product_id = await _inventoryCollection.Find(i => i.Id == id).Project(i => i.ProductId).FirstOrDefaultAsync();
             // Add business logic to check for pending orders here before deleting
             var inventory = await GetInventoryById(id);
-            if (inventory == null || HasPendingOrders(id))
+            var hasPendingOrder = await HasPendingOrders(product_id);
+            if (inventory == null || hasPendingOrder)
             {
                 return false;
             }
@@ -64,10 +69,24 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return result.DeletedCount > 0;
         }
 
-        private bool HasPendingOrders(string productId)
+        private async Task<bool> HasPendingOrders(string productId)
         {
-            // Logic to check pending orders from the orders collection
-            return false;
+            // Query the orders collection for any orders with pending status that contain the product
+            var filter = Builders<Order>.Filter.And(
+                Builders<Order>.Filter.Eq(o => o.OrderStatus, "Pending"),
+                Builders<Order>.Filter.ElemMatch(o => o.OrderItems, Builders<OrderItem>.Filter.Eq(oi => oi.ProductId, productId))
+            );
+
+            if(_orderCollection != null)
+            {
+                  var pendingOrder = await _orderCollection.Find(filter).FirstOrDefaultAsync();
+                  return pendingOrder != null;
+            }
+            else
+            {
+                return false;
+            }
+
         }
 
         public async Task<bool> CheckLowStockAndNotify(string vendorId)
