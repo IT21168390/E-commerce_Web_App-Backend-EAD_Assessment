@@ -78,5 +78,19 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
             return Ok($"User with ID = {id} deleted");
         }
+
+        [HttpPut("activeUser/{id}")]
+        public IActionResult ChangeUserStatus(string id, [FromQuery] string status)
+        {
+            var user = userService.Get(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            userService.ChangeStatus(id, status);
+            return Ok(new { message = "User status updated successfully" });
+        }
+
     }
 }

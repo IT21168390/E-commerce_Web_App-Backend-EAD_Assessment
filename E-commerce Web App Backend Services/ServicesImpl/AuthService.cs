@@ -27,8 +27,15 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
         public string Authenticate(UserLoginDTO userLoginDTO)
         {
+            // Find the user based on email and password
             var user = _users.Find(u => u.Email == userLoginDTO.Email && u.Password == userLoginDTO.Password).FirstOrDefault();
-            if (user == null) return null;
+
+            // Check if the user exists and if their status is "Active"
+            if (user == null || user.Status != "Active")
+            {
+                // If user is null or their status is not active, return null (authentication failed)
+                return null;
+            }
 
             // Generate JWT token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -38,8 +45,8 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                new Claim(ClaimTypes.Name, user.Id),
-                new Claim(ClaimTypes.Role, user.UserType)
+                    new Claim(ClaimTypes.Name, user.Id),
+                    new Claim(ClaimTypes.Role, user.UserType)
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(60),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
@@ -58,8 +65,18 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 Name = userRegisterDTO.Name,
                 Email = userRegisterDTO.Email,
                 Password = userRegisterDTO.Password,  // Hashing required in production
-                UserType = userRegisterDTO.Role
+                UserType = userRegisterDTO.UserType
             };
+
+            // Set default status for customers and vendors
+            if (user.UserType == "Customer" || user.UserType == "Vendor")
+            {
+                user.Status = "Inactive";
+            }
+            else
+            {
+                user.Status = "Active"; // Other user types can be active by default
+            }
 
             _users.InsertOne(user);
             return user;
