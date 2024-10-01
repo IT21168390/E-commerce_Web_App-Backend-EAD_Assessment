@@ -10,6 +10,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
     public class OrderService : IOrderService
     {
         private readonly IMongoCollection<Order> _ordersCollection;
+        private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Product> _productsCollection;
         private readonly IProductService _productService;
         private readonly IInventoryService _inventoryService;
@@ -20,6 +21,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         {
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
+            _usersCollection = database.GetCollection<User>(dbSettings.Value.UserCollectionName);
             _ordersCollection = database.GetCollection<Order>(dbSettings.Value.OrdersCollectionName);
             _productsCollection = database.GetCollection<Product>(dbSettings.Value.ProductCollectionName);
             _productService = productService;
@@ -383,6 +385,24 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             {
                 throw new KeyNotFoundException($"Order with ID '{orderId}' not found.");
             }
+
+            // Fetch customer name
+            var customer = await _usersCollection.Find(u => u.Id == order.CustomerId).FirstOrDefaultAsync();
+            if (customer != null)
+            {
+                order.CustomerName = customer.Name;
+            }
+
+            // Fetch vendor names
+            foreach (var vendorStatus in order.VendorStatus)
+            {
+                var vendor = await _usersCollection.Find(u => u.Id == vendorStatus.VendorId).FirstOrDefaultAsync();
+                if (vendor != null)
+                {
+                    vendorStatus.VendorName = vendor.Name;
+                }
+            }
+
             return order;
         }
 
@@ -395,12 +415,75 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         /// <returns>A list of orders.</returns>
         public async Task<List<Order>> GetAllOrdersAsync(int pageNumber = 1, int pageSize = 10)
         {
-            return await _ordersCollection
+            var orders = await _ordersCollection
                 .Find(_ => true)
                 .Skip((pageNumber - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
+
+            foreach (var order in orders)
+            {
+                // Fetch customer name
+                var customer = await _usersCollection.Find(u => u.Id == order.CustomerId).FirstOrDefaultAsync();
+                if (customer != null)
+                {
+                    order.CustomerName = customer.Name;
+                }
+
+                // Fetch vendor names
+                foreach (var vendorStatus in order.VendorStatus)
+                {
+                    var vendor = await _usersCollection.Find(u => u.Id == vendorStatus.VendorId).FirstOrDefaultAsync();
+                    if (vendor != null)
+                    {
+                        vendorStatus.VendorName = vendor.Name;
+                    }
+                }
+            }
+
+            return orders;
         }
+
+
+
+        /// <summary>
+        /// Retrieves all orders by customer ID with optional pagination.
+        /// </summary>
+        /// <param name="customerId">The ID of the customer to retrieve orders for.</param>
+        /// <param name="pageNumber">The page number to retrieve.</param>
+        /// <param name="pageSize">The number of orders per page.</param>
+        /// <returns>A list of orders associated with the customer.</returns>
+        public async Task<List<Order>> GetOrdersByCustomerIdAsync(string customerId, int pageNumber = 1, int pageSize = 10)
+        {
+            var orders = await _ordersCollection
+                .Find(order => order.CustomerId == customerId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
+
+            // Filter out order items that are not from the vendor
+            foreach (var order in orders)
+            {
+                // Fetch customer name
+                var customer = await _usersCollection.Find(u => u.Id == order.CustomerId).FirstOrDefaultAsync();
+                if (customer != null)
+                {
+                    order.CustomerName = customer.Name;
+                }
+
+                foreach (var vendorStatus in order.VendorStatus)
+                {
+                    var vendor = await _usersCollection.Find(u => u.Id == vendorStatus.VendorId).FirstOrDefaultAsync();
+                    if (vendor != null)
+                    {
+                        vendorStatus.VendorName = vendor.Name;
+                    }
+                }
+            }
+
+            return orders;
+        }
+
 
 
         public async Task<List<Order>> GetOrdersByVendorIdAsync(string vendorId, int pageNumber = 1, int pageSize = 10)
@@ -415,9 +498,25 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             // Filter out order items that are not from the vendor
             foreach (var order in orders)
             {
+                // Fetch customer name
+                var customer = await _usersCollection.Find(u => u.Id == order.CustomerId).FirstOrDefaultAsync();
+                if (customer != null)
+                {
+                    order.CustomerName = customer.Name;
+                }
+
                 order.OrderItems = order.OrderItems
                     .Where(item => IsProductFromVendor(item.ProductId, vendorId))
                     .ToList();
+
+                foreach (var vendorStatus in order.VendorStatus)
+                {
+                    var vendor = await _usersCollection.Find(u => u.Id == vendorStatus.VendorId).FirstOrDefaultAsync();
+                    if (vendor != null)
+                    {
+                        vendorStatus.VendorName = vendor.Name;
+                    }
+                }
             }
 
             return orders.Where(order => order.OrderItems.Any()).ToList(); // Only return orders that have items from the vendor

@@ -6,6 +6,7 @@ namespace E_commerce_Web_App_Backend_Services.Services
     public interface IOrderService
     {
         Task<Order> GetOrderByIdAsync(string orderId);
+        Task<List<Order>> GetOrdersByCustomerIdAsync(string customerId, int pageNumber, int pageSize);
         Task<List<Order>> GetOrdersByVendorIdAsync(string vendorId, int pageNumber, int pageSize);
         Task<List<Order>> GetAllOrdersAsync(int pageNumber, int pageSize);
 

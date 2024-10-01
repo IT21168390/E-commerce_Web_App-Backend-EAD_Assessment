@@ -12,6 +12,9 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string CustomerId { get; set; }
 
+        [BsonIgnore]
+        public string CustomerName { get; set; }
+
         [BsonElement("order_status")]
         public string OrderStatus { get; set; } = "Processing"; // "processing", "delivered", "cancelled", etc.
 
@@ -58,6 +61,9 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonElement("vendor_id")]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string VendorId { get; set; }
+
+        [BsonIgnore]
+        public string VendorName { get; set; }
 
         [BsonElement("status")]
         public string Status { get; set; } // "ready", "partially delivered", etc.
