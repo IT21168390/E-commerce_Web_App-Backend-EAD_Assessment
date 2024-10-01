@@ -265,6 +265,29 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
 
+        /// <summary>
+        /// Gets all orders by customer ID with optional pagination.
+        /// </summary>
+        /// <param name="customerId">Customer ID.</param>
+        /// <param name="pageNumber">Page number.</param>
+        /// <param name="pageSize">Number of orders per page.</param>
+        /// <returns>A list of orders associated with the customer.</returns>
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetOrdersByCustomerId(string customerId, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var orders = await _orderService.GetOrdersByCustomerIdAsync(customerId, pageNumber, pageSize);
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
+
+
+
 
         // DELETE api/<OrdersController>/5
         [HttpDelete("{id}")]
