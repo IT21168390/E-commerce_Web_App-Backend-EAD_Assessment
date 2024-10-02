@@ -9,5 +9,6 @@
         string InventoryCollectionName { get; set; }
         string OrdersCollectionName { get; set; }
         string NotificationCollectionName { get; set; }
+        string VendorRatingCollectionName { get; set; }
     }
 }
