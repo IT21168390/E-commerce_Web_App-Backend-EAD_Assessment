@@ -1,5 +1,6 @@
 ﻿using E_commerce_Web_App_Backend_Services.Services;
 using E_commerce_Web_App_Backend_Services.ServicesImpl;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -80,6 +81,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
         [HttpPut("activeUser/{id}")]
+        //[Authorize(Roles = "Administrator")]  // Only Admins can active users
         public IActionResult ChangeUserStatus(string id, [FromQuery] string status)
         {
             var user = userService.Get(id);

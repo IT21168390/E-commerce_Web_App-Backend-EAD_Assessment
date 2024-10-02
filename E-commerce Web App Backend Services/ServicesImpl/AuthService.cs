@@ -1,4 +1,5 @@
-﻿using E_commerce_Web_App_Backend_Services.Dto;
+﻿using BCrypt.Net;
+using E_commerce_Web_App_Backend_Services.Dto;
 using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 using Microsoft.IdentityModel.Tokens;
@@ -27,13 +28,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
         public string Authenticate(UserLoginDTO userLoginDTO)
         {
-            // Find the user based on email and password
-            var user = _users.Find(u => u.Email == userLoginDTO.Email && u.Password == userLoginDTO.Password).FirstOrDefault();
+            // Find the user by email
+            var user = _users.Find(u => u.Email == userLoginDTO.Email).FirstOrDefault();
 
-            // Check if the user exists and if their status is "Active"
-            if (user == null || user.Status != "Active")
+            // Check if the user exists and the password matches the hashed password
+            if (user == null || !BCrypt.Net.BCrypt.Verify(userLoginDTO.Password, user.Password) || user.Status != "Active")
             {
-                // If user is null or their status is not active, return null (authentication failed)
+                // If user is null, password doesn't match, or user status is not active, return null
                 return null;
             }
 
@@ -64,7 +65,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             {
                 Name = userRegisterDTO.Name,
                 Email = userRegisterDTO.Email,
-                Password = userRegisterDTO.Password,  // Hashing required in production
+                Password = BCrypt.Net.BCrypt.HashPassword(userRegisterDTO.Password),  // Hashing the password
                 UserType = userRegisterDTO.UserType
             };
 
