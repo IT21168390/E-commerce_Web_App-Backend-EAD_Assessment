@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
+using E_commerce_Web_App_Backend_Services.Dto;
 
 
 namespace E_commerce_Web_App_Backend_Services.Controllers
@@ -44,11 +45,23 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return Ok(inventory);
         }
 
-        // PUT: api/inventory/{id}
+                // PUT: api/inventory/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInventory(string id, [FromBody] Inventory updatedInventory)
+        public async Task<IActionResult> UpdateInventory(string id, [FromBody] InventoryUpdateDto updatedInventory)
         {
             var inventory = await _inventoryService.UpdateInventory(id, updatedInventory);
+            if (inventory == null)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        // PUT: api/inventory/{id}
+        [HttpPut("buy/{id}")]
+        public async Task<IActionResult> UpdateInventoryBuy(string id, [FromBody] InventoryDto updatedInventory)
+        {
+            var inventory = await _inventoryService.UpdateInventoryBuy(id, updatedInventory);
             if (inventory == null)
             {
                 return NotFound();
