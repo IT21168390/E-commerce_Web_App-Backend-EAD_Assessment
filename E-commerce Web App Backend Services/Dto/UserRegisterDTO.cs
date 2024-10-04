@@ -5,6 +5,6 @@
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
-        public string? Role { get; set; }  // Administrator, Vendor, CSR
+        public string? UserType { get; set; }  // Administrator, Vendor, CSR
     }
 }
