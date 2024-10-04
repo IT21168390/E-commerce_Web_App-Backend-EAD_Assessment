@@ -17,7 +17,8 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         }
         public Product AddProduct(ProductDTO newProduct)
         {
-            Product product = new Product { 
+            Product product = new Product {
+                ProductId = newProduct.ProductId,
                 Name = newProduct.Name, 
                 Category = newProduct.Category, 
                 VendorId = newProduct.VendorId, 

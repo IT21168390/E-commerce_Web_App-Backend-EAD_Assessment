@@ -14,10 +14,11 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         private readonly IMongoCollection<Product> _productsCollection;
         private readonly IProductService _productService;
         private readonly IInventoryService _inventoryService;
+        private readonly INotificationService _notificationService;
 
         public OrderService(IOptions<DatabaseSettings> dbSettings,
                             IProductService productService,
-                            IInventoryService inventoryService)
+                            IInventoryService inventoryService, INotificationService notificationService)
         {
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
@@ -26,6 +27,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             _productsCollection = database.GetCollection<Product>(dbSettings.Value.ProductCollectionName);
             _productService = productService;
             _inventoryService = inventoryService;
+            _notificationService = notificationService;
         }
 
         public async Task<Order> PlaceOrderAsync(PlaceOrderDto placeOrderDto)
@@ -210,6 +212,18 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
                 // Retrieve the updated order
                 order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
+
+                ////***notification***//
+                if (_notificationService != null)
+                {
+                   await _notificationService.CreateNotification(new Notification
+                   {
+                       UserId = order.CustomerId,
+                       Message = $"Order Id :{order.Id} has been cancelled."
+                   });
+                }
+                else { throw new InvalidOperationException("Notification service is not initialized.");}
+                
                 return order;
             }
             else if (order != null)
@@ -411,6 +425,15 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             if (order.VendorStatus.All(vs => vs.Status == "Delivered"))
             {
                 order.OrderStatus = "Delivered";
+                //***notification***//
+                if (_notificationService != null)
+                {
+                   await _notificationService.CreateNotification(new Notification
+                   {
+                       UserId = order.CustomerId,
+                       Message = $"Order Id :{order.Id} has been delivered."
+                   });
+                }
             }
             else if (order.VendorStatus.Any(vs => vs.Status == "Delivered"))
             {
