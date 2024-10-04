@@ -336,6 +336,72 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        public async Task<Order> DispatchOrderStatusAsync(string orderId)
+        {
+            // Find the order
+            var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
+            if (order == null)
+            {
+                throw new KeyNotFoundException("Order not found.");
+            }
+
+
+            // Find the status in the order
+            var orderStatus = order.OrderStatus;
+            if (orderStatus != "Pending")
+            {
+                throw new ArgumentException("Only Pending orders can be marked as Dispatched");
+            }
+
+            // Update the order status to "Dispatched"
+            var updateDefinition = Builders<Order>.Update.Set(o => o.OrderStatus, "Dispatched");
+            var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, updateDefinition);
+
+            // Update the order status
+            //dispatchingOrder.OrderStatus = "Dispatched";
+
+            //var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, dispatchingOrder);
+
+            if (result.ModifiedCount == 0)
+            {
+                throw new Exception("Failed to update the vendor status.");
+            }
+
+
+            foreach (var item in order.OrderItems)
+            {
+                // Validate ProductId
+                if (!ObjectId.TryParse(item.ProductId, out var productIdObj))
+                {
+                    throw new ArgumentException($"Invalid ProductId: {item.ProductId}");
+                }
+
+                var product = _productService.GetProductById(item.ProductId);
+                if (product == null)
+                {
+                    throw new ArgumentException($"Product not found: {item.ProductId}");
+                }
+
+                // Check inventory
+                var inventory = await _inventoryService.GetInventoryByProductIdAsync(item.ProductId);
+                if (inventory == null || inventory.StockQuantity < item.Quantity)
+                {
+                    throw new InvalidOperationException($"Insufficient stock for product: {product.Name}");
+                }
+
+                // Deduct stock
+                inventory.StockQuantity -= item.Quantity;
+                await _inventoryService.UpdateInventoryAsync(inventory);
+            }
+
+            // Retrieve the updated order
+            order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
+            return order;
+        }
+
+
+
+
         public async Task<Order> UpdateVendorOrderStatusAsync(string orderId, string vendorId, string status)
         {
             // Find the order
