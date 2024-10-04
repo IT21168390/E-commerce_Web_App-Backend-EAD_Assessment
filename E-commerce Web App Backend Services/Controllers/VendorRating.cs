@@ -1,16 +1,8 @@
-﻿//namespace E_commerce_Web_App_Backend_Services.Controllers
-//{
-//    public class VendorRating
-//    {
-//    }
-//}
-
+﻿
 using E_commerce_Web_App_Backend_Services.Dto;
 using E_commerce_Web_App_Backend_Services.models;
-using E_commerce_Web_App_Backend_Services.services;
+using E_commerce_Web_App_Backend_Services.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace E_commerce_Web_App_Backend_Services.Controllers
 {

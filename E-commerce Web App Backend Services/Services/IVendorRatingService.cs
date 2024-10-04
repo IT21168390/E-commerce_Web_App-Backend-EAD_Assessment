@@ -1,10 +1,7 @@
 ﻿using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Dto;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using E_commerce_Web_App_Backend_Services.Dto;
 
-namespace E_commerce_Web_App_Backend_Services.services
+namespace E_commerce_Web_App_Backend_Services.Services
 {
     public interface IVendorRatingService
     {

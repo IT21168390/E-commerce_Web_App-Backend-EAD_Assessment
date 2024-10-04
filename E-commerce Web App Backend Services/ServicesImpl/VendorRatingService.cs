@@ -1,11 +1,9 @@
 ﻿using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Dto;
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 
-namespace E_commerce_Web_App_Backend_Services.services
+namespace E_commerce_Web_App_Backend_Services.Services
 {
     public class VendorRatingService : IVendorRatingService
     {
