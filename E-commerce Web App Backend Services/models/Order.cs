@@ -67,5 +67,8 @@ namespace E_commerce_Web_App_Backend_Services.models
 
         [BsonElement("status")]
         public string Status { get; set; } // "ready", "partially delivered", etc.
+
+        [BsonElement("rated")]
+        public bool Rated { get; set; } = false; // "ready", "partially delivered", etc.
     }
 }
