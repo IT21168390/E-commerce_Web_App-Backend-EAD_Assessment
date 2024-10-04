@@ -1,5 +1,6 @@
 ﻿using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
+using E_commerce_Web_App_Backend_Services.Dto;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,13 +11,15 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
     {
         private readonly IMongoCollection<Inventory> _inventoryCollection;
         private readonly IMongoCollection<Order> _orderCollection;
+        private readonly INotificationService _notificationService;
 
-        public InventoryService(IOptions<DatabaseSettings> dbSettings)
+        public InventoryService(IOptions<DatabaseSettings> dbSettings, INotificationService _notificationService)
         {
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
             _inventoryCollection = database.GetCollection<Inventory>(dbSettings.Value.InventoryCollectionName);
             _orderCollection = database.GetCollection<Order>(dbSettings.Value.OrdersCollectionName);
+            this._notificationService = _notificationService;
         }
 
         public async Task<IEnumerable<Inventory>> GetAllInventory()
@@ -37,19 +40,79 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             await _inventoryCollection.InsertOneAsync(inventory);
         }
 
-        public async Task<Inventory> UpdateInventory(string id, Inventory updatedInventory)
+         public async Task<Inventory> UpdateInventory(string id, InventoryUpdateDto updatedInventory)
         {
-            updatedInventory.LastUpdated = DateTime.UtcNow;
-            var result = await _inventoryCollection.ReplaceOneAsync(i => i.Id == id, updatedInventory);
+
+            var existingInventory = await _inventoryCollection.Find(i => i.Id == id).FirstOrDefaultAsync();
+            if (existingInventory != null) {
+                var newInventory = new Inventory
+                {
+                    Id = id,
+                    ProductId = updatedInventory.ProductId,
+                    StockQuantity = updatedInventory.StockQuantity,
+                    VendorId = existingInventory.VendorId,
+                    LastUpdated = DateTime.UtcNow
+                };
+                if (updatedInventory.StockQuantity < 0)
+                {
+                    throw new ArgumentException("Stock quantity cannot be negative!");
+                }
+
+                if (newInventory.StockQuantity < 10)
+                {
+                    newInventory.LowStockAlert = true;
+                    await CheckLowStockAndNotify(updatedInventory.VendorId);
+
+                }
+                else
+                {
+                    newInventory.LowStockAlert = false;
+                }
+
+
+                var result = await _inventoryCollection.ReplaceOneAsync(i => i.Id == id, newInventory);
+
+                if (result.IsAcknowledged && result.ModifiedCount > 0)
+                {
+                    return newInventory;
+
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Inventory not found!");
+            }         
+            return null;
+        }
+
+        public async Task<Inventory> UpdateInventoryBuy(string id, InventoryDto updatedInventory)
+        {
+            var existingInventory = await _inventoryCollection.Find(o => o.Id == id).FirstOrDefaultAsync();
+
+            if (existingInventory.StockQuantity - updatedInventory.StockQuantity < 0)
+            {
+                throw new ArgumentException("Not having sufficient quantity!");
+            }
+
+            var newInventory = new Inventory
+            {
+                Id = id,
+                ProductId = updatedInventory.ProductId,
+                StockQuantity = existingInventory.StockQuantity - updatedInventory.StockQuantity,
+                VendorId = existingInventory.VendorId,
+                LastUpdated = DateTime.UtcNow
+            };
+            var result = await _inventoryCollection.ReplaceOneAsync(i => i.Id == id, newInventory);
 
             if (result.IsAcknowledged && result.ModifiedCount > 0)
             {
                 // Check if low stock alert is needed
-                if (updatedInventory.StockQuantity < 10)
+                if (newInventory.StockQuantity < 10)
                 {
-                    await CheckLowStockAndNotify(updatedInventory.VendorId);
+                    newInventory.LowStockAlert = true;
+                    await CheckLowStockAndNotify(newInventory.VendorId);
                 }
-                return updatedInventory;
+                return newInventory;
             }
             return null;
         }
@@ -91,8 +154,24 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
         public async Task<bool> CheckLowStockAndNotify(string vendorId)
         {
-            // Logic to notify the vendor
-            Console.WriteLine($"Notification sent to Vendor {vendorId} for low stock");
+            //***notification***//
+            if (_notificationService != null)
+            {
+                object value = await _notificationService.CreateNotification(new Notification
+                {
+                    UserId = vendorId,
+                    Message = "Low stock alert",
+                });
+
+                if (value != null)
+                {
+                    Console.WriteLine($"Notification sent to Vendor {vendorId} for low stock");
+                }
+            }else
+            {
+                throw new InvalidOperationException("Notification service is not initialized.");
+            }
+            
             return true;
         }
 
