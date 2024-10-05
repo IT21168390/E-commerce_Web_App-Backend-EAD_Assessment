@@ -45,6 +45,49 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             }
         }
 
+
+
+        /// <summary>
+        /// Updates the status of a specific order to "Dispatched" if the current status is "Pending".
+        /// Deducts stock from the inventory for each item in the order.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to be dispatched.</param>
+        /// <returns>The updated order.</returns>
+        [HttpPatch("dispatch/{orderId}")]
+        public async Task<IActionResult> DispatchOrderStatus(string orderId)
+        {
+            try
+            {
+                // Attempt to dispatch the order by updating its status to "Dispatched"
+                var updatedOrder = await _orderService.DispatchOrderStatusAsync(orderId);
+
+                // If successful, return the updated order details
+                return Ok(updatedOrder);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                // Return 404 Not Found if the order was not found
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                // Return 400 Bad Request if there was an issue with the order status or invalid product ID
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Return 409 Conflict if there is insufficient stock for any product
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Return 500 Internal Server Error for any other exceptions
+                return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
+            }
+        }
+
+
+
         /// <summary>
         /// Get order by ID.
         /// </summary>

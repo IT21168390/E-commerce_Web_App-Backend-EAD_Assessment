@@ -8,6 +8,9 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [BsonElement("order_id")]
+        public string OrderID { get; set; }
+
         [BsonElement("customer_id")]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string CustomerId { get; set; }
