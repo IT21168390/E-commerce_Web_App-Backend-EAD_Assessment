@@ -96,9 +96,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 }
             }
 
+            // Generate a unique OrderID
+            var orderID = await GenerateUniqueOrderIDAsync();
+
             var order = new Order
             {
                 CustomerId = placeOrderDto.CustomerId,
+                OrderID = orderID,
                 OrderItems = orderItems,
                 TotalAmount = totalAmount,
                 ShippingAddress = new Address
@@ -611,11 +615,40 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return orders.Where(order => order.OrderItems.Any()).ToList(); // Only return orders that have items from the vendor
         }
 
+
+
+
+
         private bool IsProductFromVendor(string productId, string vendorId)
         {
             // This is a placeholder function. Replace with actual MongoDB query logic to check product's vendor.
             var product = _productsCollection.Find(p => p.Id == productId).FirstOrDefault();
             return product != null && product.VendorId == vendorId;
+        }
+
+
+
+        // Method to generate a unique order ID in the format "EC-[<8-digit number>]"
+        private async Task<string> GenerateUniqueOrderIDAsync()
+        {
+            string orderID;
+            bool isUnique = false;
+
+            do
+            {
+                // Generate an 8-digit number
+                var randomNumber = new Random().Next(10000000, 99999999);
+                orderID = $"EC-{randomNumber}";
+
+                // Check if the generated OrderID is unique
+                var existingOrder = await _ordersCollection.Find(o => o.OrderID == orderID).FirstOrDefaultAsync();
+                if (existingOrder == null)
+                {
+                    isUnique = true;
+                }
+            } while (!isUnique);
+
+            return orderID;
         }
 
 
