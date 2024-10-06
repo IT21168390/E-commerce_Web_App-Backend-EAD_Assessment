@@ -190,6 +190,16 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                             Message = $"Order Id :{order.Id} has a cancellation request."
                         });
                     }
+                    var csrUsers = await _usersCollection.Find(u => u.UserType == Constant.CSR).ToListAsync();
+
+                    foreach (var csr in csrUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = csr.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
                 }
                 else { throw new InvalidOperationException("Notification service is not initialized.");}
 
