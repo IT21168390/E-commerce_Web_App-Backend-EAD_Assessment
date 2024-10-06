@@ -8,6 +8,9 @@ namespace E_commerce_Web_App_Backend_Services.models
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [BsonElement("order_id")]
+        public string OrderID { get; set; }
+
         [BsonElement("customer_id")]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string CustomerId { get; set; }
@@ -67,5 +70,8 @@ namespace E_commerce_Web_App_Backend_Services.models
 
         [BsonElement("status")]
         public string Status { get; set; } // "ready", "partially delivered", etc.
+
+        [BsonElement("rated")]
+        public bool Rated { get; set; } = false; // "ready", "partially delivered", etc.
     }
 }

@@ -12,6 +12,7 @@ namespace E_commerce_Web_App_Backend_Services.Services
 
         Task<Order> PlaceOrderAsync(PlaceOrderDto placeOrderDto);
         Task<Order> UpdateOrderAsync(string orderId, UpdateOrderDto updateOrderDto);
+        Task<Order> DispatchOrderStatusAsync(string orderId);
         Task<Order> UpdateVendorOrderStatusAsync(string orderId, string vendorId, string status);
         //Task<Order> CancelOrderAsync(string orderId);
         Task<Order> RequestCancelOrderAsync(string orderId);
