@@ -48,7 +48,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
 
         /// <summary>
-        /// Updates the status of a specific order to "Dispatched" if the current status is "Pending".
+        /// Updates the status of a specific order to "Dispatched" only if the current status is "Pending".
         /// Deducts stock from the inventory for each item in the order.
         /// </summary>
         /// <param name="orderId">The ID of the order to be dispatched.</param>
@@ -89,40 +89,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
 
         /// <summary>
-        /// Get order by ID.
-        /// </summary>
-        /// <param name="id">Order ID.</param>
-        /// <returns>Order details.</returns>
-        /*[HttpGet("{id:length(24)}", Name = "GetOrderById")]
-        public async Task<IActionResult> GetOrderById(string id)
-        {
-            // Implement this method if needed
-            return Ok();
-        }*/
-
-        // GET: api/<OrdersController>
-        /*[HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }*/
-
-        // GET api/<OrdersController>/5
-        /*[HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }*/
-
-        // POST api/<OrdersController>
-        /*[HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }*/
-
-
-        /// <summary>
-        /// Request to cancel an existing order.
+        /// Customer Request to cancel an existing order.
         /// </summary>
         /// <param name="id">Order ID.</param>
         /// <returns>Order details with updated status.</returns>
@@ -149,7 +116,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
         /// <summary>
-        /// Confirm the cancellation of an existing order.
+        /// CSR/Administrator confirm the cancellation of an existing order.
         /// </summary>
         /// <param name="id">Order ID.</param>
         /// <returns>Order details with updated status.</returns>
@@ -174,26 +141,15 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
                 return StatusCode(500, new { message = "An unexpected error occurred.", detail = ex.Message });
             }
         }
-        // PUT api/<OrdersController>/5
-        /*[HttpPatch("/cancel/{id}")]
-        public async Task<IActionResult> CancelOrder(string id)
-        {
-            try
-            {
-                var cancelledOrder = await _orderService.CancelOrderAsync(id);
-                return Ok(cancelledOrder);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
-            }
-        }*/
 
-        // PUT api/<OrdersController>/5
+
+
+        /// <summary>
+        /// Customer updates Order details.
+        /// </summary>
+        /// <param name="id">Order ID.</param>
+        /// <param name="updateOrderDto">Updated Order details.</param>
+        /// <returns>Order with the updated details.</returns>
         [HttpPut("{id:length(24)}")]
         public async Task<IActionResult> UpdateOrder(string id, [FromBody] UpdateOrderDto updateOrderDto)
         {
@@ -213,13 +169,19 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
 
+        /// <summary>
+        /// Vendor updates order as 'Delivered'/'Partially Delivered'.
+        /// </summary>
+        /// <param name="orderId">Order ID.</param>
+        /// <param name="vendorId">Vendor ID.</param>
+        /// <returns>Order with the updated status.</returns>
         [HttpPatch("deliver/{orderId}")]
-        public async Task<IActionResult> UpdateVendorOrderStatus(string orderId, [FromQuery] string vendorId, [FromQuery] string status)
+        public async Task<IActionResult> UpdateVendorOrderStatus(string orderId, [FromQuery] string vendorId)
         {
             try
             {
                 // Call the service to update the vendor order status
-                var updatedOrder = await _orderService.UpdateVendorOrderStatusAsync(orderId, vendorId, status);
+                var updatedOrder = await _orderService.UpdateVendorOrderStatusAsync(orderId, vendorId);
 
                 // Return the updated order
                 return Ok(updatedOrder);
@@ -329,13 +291,5 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             }
         }
 
-
-
-
-        // DELETE api/<OrdersController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }
