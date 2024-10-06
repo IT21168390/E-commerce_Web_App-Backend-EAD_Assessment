@@ -81,7 +81,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
         [HttpPut("activeUser/{id}")]
-        //[Authorize(Roles = "Administrator")]  // Only Admins can active users
+        [Authorize(Roles = "Administrator")]  // Only Admins can active users
         public IActionResult ChangeUserStatus(string id, [FromQuery] string status)
         {
             var user = userService.Get(id);
