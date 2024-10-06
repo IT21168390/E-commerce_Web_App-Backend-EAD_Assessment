@@ -9,7 +9,7 @@ namespace E_commerce_Web_App_Backend_Services
         public string? Id { get; set; }
 
         [BsonElement("user_type")]
-        public string? UserType { get; set; } = "Customer"; // "Administrator", "Vendor", "CSR", "Customer"
+        public string? UserType { get; set; } = Constant.CUSTOMER;
 
         [BsonElement("name")]
         public string? Name { get; set; }
@@ -21,7 +21,7 @@ namespace E_commerce_Web_App_Backend_Services
         public string? Password { get; set; }
 
         [BsonElement("status")]
-        public string? Status { get; set; } // "active", "deactivated"
+        public string? Status { get; set; } = Constant.ACTIVE;
 
         [BsonElement("account_created_at")]
         public DateTime? AccountCreatedAt { get; set; }
