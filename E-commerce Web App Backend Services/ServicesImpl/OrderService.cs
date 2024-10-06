@@ -96,9 +96,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 }
             }
 
+            // Generate a unique OrderID
+            var orderID = await GenerateUniqueOrderIDAsync();
+
             var order = new Order
             {
                 CustomerId = placeOrderDto.CustomerId,
+                OrderID = orderID,
                 OrderItems = orderItems,
                 TotalAmount = totalAmount,
                 ShippingAddress = new Address
@@ -336,6 +340,72 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        public async Task<Order> DispatchOrderStatusAsync(string orderId)
+        {
+            // Find the order
+            var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
+            if (order == null)
+            {
+                throw new KeyNotFoundException("Order not found.");
+            }
+
+
+            // Find the status in the order
+            var orderStatus = order.OrderStatus;
+            if (orderStatus != "Pending")
+            {
+                throw new ArgumentException("Only Pending orders can be marked as Dispatched");
+            }
+
+            // Update the order status to "Dispatched"
+            var updateDefinition = Builders<Order>.Update.Set(o => o.OrderStatus, "Dispatched");
+            var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, updateDefinition);
+
+            // Update the order status
+            //dispatchingOrder.OrderStatus = "Dispatched";
+
+            //var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, dispatchingOrder);
+
+            if (result.ModifiedCount == 0)
+            {
+                throw new Exception("Failed to update the vendor status.");
+            }
+
+
+            foreach (var item in order.OrderItems)
+            {
+                // Validate ProductId
+                if (!ObjectId.TryParse(item.ProductId, out var productIdObj))
+                {
+                    throw new ArgumentException($"Invalid ProductId: {item.ProductId}");
+                }
+
+                var product = _productService.GetProductById(item.ProductId);
+                if (product == null)
+                {
+                    throw new ArgumentException($"Product not found: {item.ProductId}");
+                }
+
+                // Check inventory
+                var inventory = await _inventoryService.GetInventoryByProductIdAsync(item.ProductId);
+                if (inventory == null || inventory.StockQuantity < item.Quantity)
+                {
+                    throw new InvalidOperationException($"Insufficient stock for product: {product.Name}");
+                }
+
+                // Deduct stock
+                inventory.StockQuantity -= item.Quantity;
+                await _inventoryService.UpdateInventoryAsync(inventory);
+            }
+
+            // Retrieve the updated order
+            order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
+            return order;
+        }
+
+
+
+
         public async Task<Order> UpdateVendorOrderStatusAsync(string orderId, string vendorId, string status)
         {
             // Find the order
@@ -545,11 +615,40 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return orders.Where(order => order.OrderItems.Any()).ToList(); // Only return orders that have items from the vendor
         }
 
+
+
+
+
         private bool IsProductFromVendor(string productId, string vendorId)
         {
             // This is a placeholder function. Replace with actual MongoDB query logic to check product's vendor.
             var product = _productsCollection.Find(p => p.Id == productId).FirstOrDefault();
             return product != null && product.VendorId == vendorId;
+        }
+
+
+
+        // Method to generate a unique order ID in the format "EC-[<8-digit number>]"
+        private async Task<string> GenerateUniqueOrderIDAsync()
+        {
+            string orderID;
+            bool isUnique = false;
+
+            do
+            {
+                // Generate an 8-digit number
+                var randomNumber = new Random().Next(10000000, 99999999);
+                orderID = $"EC-{randomNumber}";
+
+                // Check if the generated OrderID is unique
+                var existingOrder = await _ordersCollection.Find(o => o.OrderID == orderID).FirstOrDefaultAsync();
+                if (existingOrder == null)
+                {
+                    isUnique = true;
+                }
+            } while (!isUnique);
+
+            return orderID;
         }
 
 
