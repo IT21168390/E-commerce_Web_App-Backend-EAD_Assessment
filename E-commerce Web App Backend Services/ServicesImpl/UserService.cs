@@ -1,7 +1,6 @@
 ﻿using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 using MongoDB.Driver;
-using E_commerce_Web_App_Backend_Services.constants;
 
 namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 {
@@ -16,7 +15,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             this.notificationService = notificationService;
         }
 
-        public User Create(User user)
+        public async Task<User> Create(User user)
         {
             // Set default status for customers and vendors
             if (user.UserType == "Customer" || user.UserType == "Vendor")
@@ -30,17 +29,23 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
             _users.InsertOne(user);
             //***notification***//
-            if(user.UserType == "Customer")
+            if(user.UserType == Constant.CUSTOMER)
             {
                if (notificationService == null)
                {
                    throw new InvalidOperationException("Notification service is not initialized.");
                }
-               object value = notificationService.CreateNotification(new Notification
-               {
-                   UserId = Constant.VendorId,
-                   Message = "New customer account is registered, please review!",
-               });
+
+               //fetch users whose userType is csr from user collection
+               var csrUsers = await _users.Find(u => u.UserType == Constant.CSR).ToListAsync();
+                foreach (var csrUser in csrUsers)
+                {
+                     object value = notificationService.CreateNotification(new Notification
+                     {
+                          UserId = csrUser.Id,
+                          Message = "New customer account has been registered, please review!",
+                     });
+                }
             }
             return user;
         }

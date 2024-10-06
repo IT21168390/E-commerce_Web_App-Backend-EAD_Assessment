@@ -4,7 +4,7 @@
     {
         List<User> Get();
         User Get(string id);
-        User Create(User user);
+        Task<User> Create(User user);
         void Update(string id, User user);
         void Remove(string id);
         void ChangeStatus(string id, string status);
