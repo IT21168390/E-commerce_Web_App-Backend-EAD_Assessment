@@ -23,6 +23,8 @@ namespace E_commerce_Web_App_Backend_Services.Dto
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string VendorId { get; set; }
 
+        public string VendorName { get; set; }
+
         [BsonElement("price")]
         public double Price { get; set; }
 

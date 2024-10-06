@@ -9,11 +9,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
     {
         private readonly IMongoCollection<Product> _products;
         private readonly IMongoCollection<Inventory> _inventory;
+        private readonly IMongoCollection<User> _user;
         public ProductService(IDatabaseSettings settings, IMongoClient mongoClient) 
         {
             var database = mongoClient.GetDatabase(settings.DatabaseName);
             _products = database.GetCollection<Product>(settings.ProductCollectionName);
             _inventory = database.GetCollection<Inventory>(settings.InventoryCollectionName);
+            _user = database.GetCollection<User>(settings.UserCollectionName);
         }
         public Product AddProduct(ProductDTO newProduct)
         {
@@ -40,10 +42,36 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return product;
         }
 
-        public List<Product> GetAllProductList()
+        /*public List<Product> GetAllProductList()
         {
             return _products.Find(Product => true).ToList();
+        }*/
+        public List<ProductDTO> GetAllProductList()
+        {
+            var products = _products.Find(p => true).ToList();
+
+            var vendorIds = products.Select(p => p.VendorId).Distinct().ToList();
+            var vendors = _user.Find(u => vendorIds.Contains(u.Id)).ToList()
+                .ToDictionary(u => u.Id, u => u.Name); // Create a dictionary for fast lookups
+
+            // Create a list of ProductDTOs with VendorName populated
+            var productDtos = products.Select(product => new ProductDTO
+            {
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Category = product.Category,
+                VendorId = product.VendorId,
+                Description = product.Description,
+                Price = product.Price,
+                Status = product.Status,
+                CreatedAt = product.CreatedAt,
+                stockQuantity = _inventory.Find(i => i.ProductId == product.Id).FirstOrDefault()?.StockQuantity ?? 0,
+                VendorName = vendors.ContainsKey(product.VendorId) ? vendors[product.VendorId] : null // Populate VendorName
+            }).ToList();
+
+            return productDtos;
         }
+
 
         public Product GetProductById(string id)
         {
