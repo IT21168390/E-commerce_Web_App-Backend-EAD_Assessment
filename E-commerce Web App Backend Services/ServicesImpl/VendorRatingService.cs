@@ -35,7 +35,7 @@ namespace E_commerce_Web_App_Backend_Services.Services
             {
                 CustomerId = ratingDTO.CustomerId,
                 VendorId = ratingDTO.VendorId,
-                OrderID = ratingDTO.OrderID,
+                OrderId = ratingDTO.OrderId,
                 Rating = ratingDTO.Rating,
                 Comment = ratingDTO.Comment,
                 CreatedAt = DateTime.UtcNow

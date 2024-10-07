@@ -17,7 +17,7 @@ namespace E_commerce_Web_App_Backend_Services.models
 
         [BsonElement("order_id")]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
-        public string OrderID { get; set; }
+        public string OrderId { get; set; }
 
         [BsonElement("rating")]
         public double Rating { get; set; }
