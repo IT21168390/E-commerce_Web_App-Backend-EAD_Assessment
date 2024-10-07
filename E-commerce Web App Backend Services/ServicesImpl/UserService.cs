@@ -18,13 +18,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<User> Create(User user)
         {
             // Set default status for customers and vendors
-            if (user.UserType == "Customer" || user.UserType == "Vendor")
+            if (user.UserType == Constant.CUSTOMER || user.UserType == Constant.VENDOR)
             {
-                user.Status = "Inactive";
+                user.Status = Constant.INACTIVE;
             }
             else
             {
-                user.Status = "Active"; // Other user types can be active by default
+                user.Status = Constant.ACTIVE; // Other user types can be active by default
             }
 
             _users.InsertOne(user);
