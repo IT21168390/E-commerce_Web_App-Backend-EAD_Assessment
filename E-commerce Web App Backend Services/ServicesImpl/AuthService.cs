@@ -32,7 +32,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             var user = _users.Find(u => u.Email == userLoginDTO.Email).FirstOrDefault();
 
             // Check if the user exists and the password matches the hashed password
-            if (user == null || !BCrypt.Net.BCrypt.Verify(userLoginDTO.Password, user.Password) || user.Status != "Active")
+            if (user == null || !BCrypt.Net.BCrypt.Verify(userLoginDTO.Password, user.Password) || user.Status != Constant.ACTIVE)
             {
                 // If user is null, password doesn't match, or user status is not active, return null
                 return null;
@@ -70,13 +70,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             };
 
             // Set default status for customers and vendors
-            if (user.UserType == "Customer" || user.UserType == "Vendor")
+            if (user.UserType == Constant.CUSTOMER || user.UserType == Constant.VENDOR)
             {
-                user.Status = "Inactive";
+                user.Status = Constant.INACTIVE;
             }
             else
             {
-                user.Status = "Active"; // Other user types can be active by default
+                user.Status = Constant.ACTIVE; // Other user types can be active by default
             }
 
             _users.InsertOne(user);

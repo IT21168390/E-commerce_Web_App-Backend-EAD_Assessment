@@ -100,7 +100,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                     vendorStatusDict[product.VendorId] = new VendorOrderStatus
                     {
                         VendorId = product.VendorId,
-                        Status = "Processing"
+                        Status = Constant.PROCESSING
                     };
                 }
             }
@@ -141,7 +141,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<Order> RequestCancelOrderAsync(string orderId)
         {
             var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
-            if (order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == "Delivered"))
+            if (order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == Constant.DELIVERED))
             {
                 var update = Builders<Order>.Update
                                             .Set(o => o.OrderStatus, "Cancellation Requested")
@@ -151,6 +151,31 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 {
                     throw new Exception("Failed to update the order status.");
                 }
+                //***notification***//
+                if (_notificationService != null)
+                {
+                    var adminUsers = await _usersCollection.Find(u => u.UserType == Constant.ADMIN).ToListAsync();
+                                      
+                    foreach (var admin in adminUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = admin.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
+                    var csrUsers = await _usersCollection.Find(u => u.UserType == Constant.CSR).ToListAsync();
+
+                    foreach (var csr in csrUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = csr.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
+                }
+                else { throw new InvalidOperationException("Notification service is not initialized.");}
 
                 // Retrieve the updated order
                 order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
@@ -180,7 +205,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             if (order != null && order.OrderStatus == "Cancellation Requested")
             {
                 var update = Builders<Order>.Update
-                                            .Set(o => o.OrderStatus, "Cancelled")
+                                            .Set(o => o.OrderStatus, Constant.CANCELLED)
                                             .Set(o => o.UpdatedAt, DateTime.UtcNow);
                 var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, update);
                 if (result.ModifiedCount == 0)
@@ -423,12 +448,12 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             }
 
             // Update the vendor status
-            vendorStatus.Status = "Delivered";
+            vendorStatus.Status = Constant.DELIVERED;
 
             // Update the order status
-            if (order.VendorStatus.All(vs => vs.Status == "Delivered"))
+            if (order.VendorStatus.All(vs => vs.Status == Constant.DELIVERED))
             {
-                order.OrderStatus = "Delivered";
+                order.OrderStatus = Constant.DELIVERED;
                 //***notification***//
                 if (_notificationService != null)
                 {
@@ -439,7 +464,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                    });
                 }
             }
-            else if (order.VendorStatus.Any(vs => vs.Status == "Delivered"))
+            else if (order.VendorStatus.Any(vs => vs.Status == Constant.DELIVERED))
             {
                 order.OrderStatus = "Partially Delivered";
             }
