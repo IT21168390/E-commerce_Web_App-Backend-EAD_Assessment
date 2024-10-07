@@ -54,5 +54,14 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+        // New API to get ratings by CustomerId
+        [HttpGet("customer/{customerId}")]
+        public async Task<ActionResult<IEnumerable<VendorRating>>> GetRatingsByCustomerId(string customerId)
+        {
+            var ratings = await _vendorRatingService.GetRatingsByCustomerId(customerId);
+            if (ratings == null || !ratings.Any()) return NotFound();
+            return Ok(ratings);
+        }
     }
 }

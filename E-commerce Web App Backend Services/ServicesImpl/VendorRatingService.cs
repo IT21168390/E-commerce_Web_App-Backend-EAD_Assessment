@@ -68,5 +68,10 @@ namespace E_commerce_Web_App_Backend_Services.Services
             var result = await _vendorRatings.DeleteOneAsync(rating => rating.Id == id);
             return result.DeletedCount > 0;
         }
+
+        public async Task<IEnumerable<VendorRating>> GetRatingsByCustomerId(string customerId)
+        {
+            return await _vendorRatings.Find(rating => rating.CustomerId == customerId).ToListAsync();
+        }
     }
 }

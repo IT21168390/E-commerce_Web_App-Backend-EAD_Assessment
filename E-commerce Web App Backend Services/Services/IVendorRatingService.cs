@@ -10,5 +10,6 @@ namespace E_commerce_Web_App_Backend_Services.Services
         Task<VendorRating> AddRating(VendorRatingDTO ratingDTO);
         Task<VendorRating> UpdateRating(string id, VendorRatingDTO ratingDTO);
         Task<bool> DeleteRating(string id);
+        Task<IEnumerable<VendorRating>> GetRatingsByCustomerId(string customerId);
     }
 }
