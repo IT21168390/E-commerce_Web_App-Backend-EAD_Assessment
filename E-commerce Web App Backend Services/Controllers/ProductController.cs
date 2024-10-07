@@ -43,7 +43,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
         // POST api/<ProductController>
         [HttpPost("AddProduct")]
-        //[Authorize(Roles = "Vendor")]
+        [Authorize(Roles = "Vendor")]
         public ActionResult<Product> Post([FromBody] ProductDTO product)
         {
             productService.AddProduct(product);

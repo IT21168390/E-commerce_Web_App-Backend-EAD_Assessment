@@ -16,6 +16,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             this.notificationService = notificationService;
         }
 
+        //Method to Add a User
         public User Create(User user)
         {
             // Set default status for customers and vendors
@@ -45,28 +46,32 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return user;
         }
 
-        // New method to update the status of a user
+        // Method to update the status of a user
         public void ChangeStatus(string id, string status)
         {
             var update = Builders<User>.Update.Set(u => u.Status, status);
             _users.UpdateOne(User => User.Id == id, update);
         }
 
+        //Method to get all users
         public List<User> Get()
         {
             return _users.Find(User => true).ToList();
         }
 
+        //Method to get user by id
         public User Get(string id)
         {
             return _users.Find(User => User.Id == id).FirstOrDefault();
         }
 
+        //Method to remove a user
         public void Remove(string id)
         {
             _users.DeleteOne(User => User.Id == id);
         }
 
+        //Method to update a user
         public void Update(string id, User user)
         {
             _users.ReplaceOne(User => User.Id == id, user);

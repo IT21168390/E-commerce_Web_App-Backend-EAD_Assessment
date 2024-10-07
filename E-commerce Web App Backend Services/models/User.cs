@@ -26,8 +26,11 @@ namespace E_commerce_Web_App_Backend_Services
         [BsonElement("account_created_at")]
         public DateTime? AccountCreatedAt { get; set; }
 
+        [BsonElement("address")]
+        public Address Address { get; internal set; }
     }
 
+    
     public class Address
     {
         [BsonElement("street")]

@@ -15,6 +15,8 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             _products = database.GetCollection<Product>(settings.ProductCollectionName);
             _inventory = database.GetCollection<Inventory>(settings.InventoryCollectionName);
         }
+
+        // Method to add a product
         public Product AddProduct(ProductDTO newProduct)
         {
             Product product = new Product {
@@ -40,34 +42,42 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return product;
         }
 
+
+        // Method to get all product list
         public List<Product> GetAllProductList()
         {
             return _products.Find(Product => true).ToList();
         }
+
+        // Method to get a product by id
 
         public Product GetProductById(string id)
         {
             return _products.Find(Product => Product.Id == id).FirstOrDefault();
         }
 
+
+        // Method to remove a product
         public void RemoveProductById(string id)
         {
             _products.DeleteOne(Product => Product.Id == id);
         }
 
+
+        // Method to update a product
         public void UpdateProductById(string id, Product product)
         {
             _products.ReplaceOne(Product => Product.Id == id, product);
         }
 
-        // Activate/Deactivate a product by Product ID
+        // Method to Activate/Deactivate a product by Product ID
         public void UpdateProductStatusById(string id, string status)
         {
             var update = Builders<Product>.Update.Set(p => p.Status, status);
             _products.UpdateOne(p => p.Id == id, update);
         }
 
-        // Activate/Deactivate products by Vendor ID and Category
+        // Method to Activate/Deactivate products by Vendor ID and Category
         public void UpdateProductsStatusByVendorAndCategory(string vendorId, string category, string status)
         {
             var filter = Builders<Product>.Filter.Eq(p => p.VendorId, vendorId) & Builders<Product>.Filter.Eq(p => p.Category, category);

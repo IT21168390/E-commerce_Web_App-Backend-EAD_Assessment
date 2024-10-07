@@ -38,7 +38,6 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
         [HttpPost("register")]
-        //[Authorize(Roles = "Administrator")]  // Only Admins can register users
         public IActionResult Register([FromBody] UserRegisterDTO registerDTO)
         {
             try

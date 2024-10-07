@@ -25,7 +25,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return userService.Get();
         }
 
-        // GET api/<UserController>/5
+        // GET api/<UserController>/{id}
         [HttpGet("{id}")]
         public ActionResult<User> Get(string id)
         {
@@ -48,7 +48,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
         }
 
-        // PUT api/<UserController>/5
+        // PUT api/<UserController>/{id}
         [HttpPut("{id}")]
         public ActionResult Put(string id, [FromBody] User user)
         {
@@ -64,7 +64,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return NoContent();
         }
 
-        // DELETE api/<UserController>/5
+        // DELETE api/<UserController>/{id}
         [HttpDelete("{id}")]
         public ActionResult Delete(string id)
         {
