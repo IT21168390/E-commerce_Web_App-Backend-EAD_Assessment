@@ -142,6 +142,31 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 {
                     throw new Exception("Failed to update the order status.");
                 }
+                //***notification***//
+                if (_notificationService != null)
+                {
+                    var adminUsers = await _usersCollection.Find(u => u.UserType == Constant.ADMIN).ToListAsync();
+                                      
+                    foreach (var admin in adminUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = admin.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
+                    var csrUsers = await _usersCollection.Find(u => u.UserType == Constant.CSR).ToListAsync();
+
+                    foreach (var csr in csrUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = csr.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
+                }
+                else { throw new InvalidOperationException("Notification service is not initialized.");}
 
                 // Retrieve the updated order
                 order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
