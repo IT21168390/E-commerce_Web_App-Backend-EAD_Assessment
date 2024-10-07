@@ -2,7 +2,7 @@
 {
     public class UpdateOrderDto
     {
-        public List<OrderItemDto> OrderItems { get; set; }
+        public List<OrderItemDto>? OrderItems { get; set; }
         public AddressDto ShippingAddress { get; set; }
     }
 }
