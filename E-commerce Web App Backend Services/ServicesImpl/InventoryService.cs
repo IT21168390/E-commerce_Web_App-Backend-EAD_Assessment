@@ -12,6 +12,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         private readonly IMongoCollection<Inventory> _inventoryCollection;
         private readonly IMongoCollection<Order> _orderCollection;
         private readonly INotificationService _notificationService;
+        private readonly IMongoCollection<Product> _productCollection;
 
         public InventoryService(IOptions<DatabaseSettings> dbSettings, INotificationService _notificationService)
         {
@@ -19,7 +20,9 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
             _inventoryCollection = database.GetCollection<Inventory>(dbSettings.Value.InventoryCollectionName);
             _orderCollection = database.GetCollection<Order>(dbSettings.Value.OrdersCollectionName);
+            _productCollection = database.GetCollection<Product>(dbSettings.Value.ProductCollectionName);
             this._notificationService = _notificationService;
+            this._productCollection = _productCollection;
         }
 
         public async Task<IEnumerable<Inventory>> GetAllInventory()
@@ -129,6 +132,27 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 return false;
             }
             var result = await _inventoryCollection.DeleteOneAsync(i => i.Id == id);
+
+            //when delete the inventory record of a product it's need to delete the accociated product also
+            if (result.DeletedCount > 0)
+            {
+                if (!string.IsNullOrEmpty(product_id))
+                {
+                    var productDeleteResult = await _productCollection.DeleteOneAsync(p => p.Id == product_id);
+                    if (productDeleteResult == null)
+                    {
+                        // Handle the case where the product deletion failed
+                        throw new InvalidOperationException($"Failed to delete the product with id {product_id}");
+                    }
+                    else
+                    {
+                        // Handle the case where the product deletion succeeded
+                        Console.WriteLine($"Product with id {product_id} deleted successfully");
+                    }
+                    
+                }
+            }
+
             return result.DeletedCount > 0;
         }
 
