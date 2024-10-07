@@ -22,7 +22,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
         // GET: api/<ProductController>
         [HttpGet("GetAllProductList")]
-        public ActionResult<List<Product>> Get()
+        public ActionResult<List<ProductDTO>> Get()
         {
             return productService.GetAllProductList();
         }

@@ -5,7 +5,7 @@ namespace E_commerce_Web_App_Backend_Services.Services
 {
     public interface IProductService
     {
-        List<Product> GetAllProductList();
+        List<ProductDTO> GetAllProductList();
         Product GetProductById(string id);
         Product AddProduct(ProductDTO product);
         void UpdateProductById(string id, Product product);
