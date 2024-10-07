@@ -2,21 +2,31 @@
 using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 
-
 namespace E_commerce_Web_App_Backend_Services.Controllers
 {
+    /// <summary>
+    /// Controller for managing notification operations.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class NotificationController : ControllerBase
     {
         private readonly INotificationService _notificationService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NotificationController"/> class.
+        /// </summary>
+        /// <param name="notificationService">The notification service.</param>
         public NotificationController(INotificationService notificationService)
         {
             _notificationService = notificationService;
         }
 
-
+        /// <summary>
+        /// Creates a new notification.
+        /// </summary>
+        /// <param name="notification">The notification to create.</param>
+        /// <returns>The created notification.</returns>
         [HttpPost]
         public async Task<ActionResult<Notification>> CreateNotification([FromBody] Notification notification)
         {
@@ -27,7 +37,11 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return CreatedAtAction(nameof(GetNotificationById), new { id = createdNotification.Id }, createdNotification);
         }
 
-
+        /// <summary>
+        /// Gets a specific notification by ID.
+        /// </summary>
+        /// <param name="id">The ID of the notification.</param>
+        /// <returns>The notification with the specified ID.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<Notification>> GetNotificationById(string id)
         {
@@ -38,6 +52,11 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return Ok(notification);
         }
 
+        /// <summary>
+        /// Gets all notifications for a specific user by user ID.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>A list of notifications for the specified user.</returns>
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Notification>>> GetAllNotificationsByUserId(string userId)
         {
@@ -48,6 +67,11 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return Ok(notifications);
         }
 
+        /// <summary>
+        /// Marks a specific notification as read by ID.
+        /// </summary>
+        /// <param name="id">The ID of the notification to mark as read.</param>
+        /// <returns>No content if the operation is successful.</returns>
         [HttpPut("{id}/mark-as-read")]
         public async Task<ActionResult> MarkAsRead(string id)
         {
@@ -58,6 +82,11 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes a specific notification by ID.
+        /// </summary>
+        /// <param name="id">The ID of the notification to delete.</param>
+        /// <returns>No content if the deletion is successful.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteNotification(string id)
         {
