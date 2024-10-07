@@ -9,9 +9,11 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 {
     public class OrderService : IOrderService
     {
+        // MongoDB collections
         private readonly IMongoCollection<Order> _ordersCollection;
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Product> _productsCollection;
+        // Services dependencies
         private readonly IProductService _productService;
         private readonly IInventoryService _inventoryService;
         private readonly INotificationService _notificationService;
@@ -20,16 +22,27 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                             IProductService productService,
                             IInventoryService inventoryService, INotificationService notificationService)
         {
+            // Set up MongoDB client and retrieve necessary collections
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
             _usersCollection = database.GetCollection<User>(dbSettings.Value.UserCollectionName);
             _ordersCollection = database.GetCollection<Order>(dbSettings.Value.OrdersCollectionName);
             _productsCollection = database.GetCollection<Product>(dbSettings.Value.ProductCollectionName);
+            
+            // Assign service dependencies
             _productService = productService;
             _inventoryService = inventoryService;
             _notificationService = notificationService;
         }
 
+
+        /// <summary>
+        /// Places an order based on provided order details.
+        /// </summary>
+        /// <param name="placeOrderDto">The details of the order to be placed.</param>
+        /// <returns>The placed order.</returns>
+        /// <exception cref="ArgumentException">Thrown if the customer ID or product ID is invalid, or if the quantity is less than or equal to zero.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is insufficient stock for any product.</exception>
         public async Task<Order> PlaceOrderAsync(PlaceOrderDto placeOrderDto)
         {
             // Validate CustomerId
@@ -67,10 +80,6 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 {
                     throw new InvalidOperationException($"Insufficient stock for product: {product.Name}");
                 }
-
-                // Deduct stock
-                /*inventory.StockQuantity -= itemDto.Quantity;
-                await _inventoryService.UpdateInventoryAsync(inventory);*/
 
                 // Calculate total
                 totalAmount += product.Price * itemDto.Quantity;
@@ -232,6 +241,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        /// <summary>
+        /// Updates an existing order based on provided update details.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to update.</param>
+        /// <param name="updateOrderDto">The details of the order to be updated.</param>
+        /// <returns>The updated order.</returns>
+        /// <exception cref="ArgumentException">Thrown if the order or product ID is invalid or if the order is not found.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is insufficient stock for any product.</exception>
         public async Task<Order> UpdateOrderAsync(string orderId, UpdateOrderDto updateOrderDto)
         {
             // Validate OrderId
@@ -329,7 +346,15 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
-
+        /// <summary>
+        /// Updates the status of an order to "Dispatched" and adjusts inventory accordingly.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to be dispatched.</param>
+        /// <returns>The updated order after dispatch.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown if the order does not exist.</exception>
+        /// <exception cref="ArgumentException">Thrown if the order is not in a "Pending" status.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is insufficient stock for any product in the order.</exception>
+        /// <exception cref="Exception">Thrown if the order status update fails.</exception>
         public async Task<Order> DispatchOrderStatusAsync(string orderId)
         {
             // Find the order
@@ -396,6 +421,16 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        /// <summary>
+        /// Updates the vendor-specific status of an order and adjusts the overall order status accordingly.
+        /// Also sends a notification to the customer if the order is fully delivered.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to update.</param>
+        /// <param name="vendorId">The ID of the vendor whose status is being updated.</param>
+        /// <returns>The updated order after vendor status update.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown if the order does not exist.</exception>
+        /// <exception cref="ArgumentException">Thrown if the vendor is not associated with the order.</exception>
+        /// <exception cref="Exception">Thrown if the vendor status update fails.</exception>
         public async Task<Order> UpdateVendorOrderStatusAsync(string orderId, string vendorId)
         {
             // Find the order
@@ -569,6 +604,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        /// <summary>
+        /// Retrieves all orders that include items from a specific vendor, with optional pagination.
+        /// </summary>
+        /// <param name="vendorId">The ID of the vendor whose orders are to be retrieved.</param>
+        /// <param name="pageNumber">The page number for pagination (default is 1).</param>
+        /// <param name="pageSize">The number of orders per page (default is 10).</param>
+        /// <returns>A list of orders containing items from the specified vendor.</returns>
+        /// <exception cref="ArgumentException">Thrown if the vendor ID is invalid.</exception>
         public async Task<List<Order>> GetOrdersByVendorIdAsync(string vendorId, int pageNumber = 1, int pageSize = 10)
         {
             // Get all orders that contain items from the vendor
