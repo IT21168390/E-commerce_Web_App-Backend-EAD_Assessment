@@ -7,6 +7,7 @@
 
         public static String ACTIVE = "Active";
         public static String INACTIVE = "Inactive";
+        public static String DEACTIVATED = "Deactivated";
 
         public static String PROCESSING = "Processing";
         public static String DELIVERED = "Delivered";
