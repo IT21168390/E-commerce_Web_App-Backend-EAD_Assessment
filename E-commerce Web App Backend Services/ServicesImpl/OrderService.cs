@@ -141,10 +141,10 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<Order> RequestCancelOrderAsync(string orderId)
         {
             var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
-            if (order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == Constant.DELIVERED))
+            if (order != null && !(order.OrderStatus == Constant.DISPATCHED || order.OrderStatus == Constant.DELIVERED))
             {
                 var update = Builders<Order>.Update
-                                            .Set(o => o.OrderStatus, "Cancellation Requested")
+                                            .Set(o => o.OrderStatus, Constant.CANCEL_REQUESTED)
                                             .Set(o => o.UpdatedAt, DateTime.UtcNow);
                 var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, update);
                 if (result.ModifiedCount == 0)
@@ -202,7 +202,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<Order> ConfirmCancelOrderAsync(string orderId)
         {
             var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
-            if (order != null && order.OrderStatus == "Cancellation Requested")
+            if (order != null && order.OrderStatus == Constant.CANCEL_REQUESTED)
             {
                 var update = Builders<Order>.Update
                                             .Set(o => o.OrderStatus, Constant.CANCELLED)
@@ -367,13 +367,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
             // Find the status in the order
             var orderStatus = order.OrderStatus;
-            if (orderStatus != "Pending")
+            if (orderStatus != Constant.PENDING)
             {
                 throw new ArgumentException("Only Pending orders can be marked as Dispatched");
             }
 
             // Update the order status to "Dispatched"
-            var updateDefinition = Builders<Order>.Update.Set(o => o.OrderStatus, "Dispatched");
+            var updateDefinition = Builders<Order>.Update.Set(o => o.OrderStatus, Constant.DISPATCHED);
             var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, updateDefinition);
 
             // Update the order status
@@ -466,7 +466,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             }
             else if (order.VendorStatus.Any(vs => vs.Status == Constant.DELIVERED))
             {
-                order.OrderStatus = "Partially Delivered";
+                order.OrderStatus = Constant.PARTIALLY_DELIVERED;
             }
 
             // Update the order in the database
