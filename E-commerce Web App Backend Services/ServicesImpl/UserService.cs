@@ -77,8 +77,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             var existingUser = _users.Find(u => u.Id == id).FirstOrDefault();
             if (existingUser != null)
             {
-                user.Id = existingUser.Id; // Ensure the _id field is set
-                _users.ReplaceOne(u => u.Id == id, user);
+                existingUser.Name = user.Name ?? existingUser.Name;
+                existingUser.Email = user.Email ?? existingUser.Email;
+                existingUser.Password = user.Password ?? existingUser.Password;
+                existingUser.UserType = user.UserType ?? existingUser.UserType;
+                existingUser.Status = user.Status ?? existingUser.Status;
+                existingUser.Address = user.Address ?? existingUser.Address;
+  
+                _users.ReplaceOne(u => u.Id == id, existingUser);
             }
         }
 
