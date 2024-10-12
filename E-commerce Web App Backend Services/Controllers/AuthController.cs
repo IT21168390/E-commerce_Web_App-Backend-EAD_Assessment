@@ -7,17 +7,32 @@ using System;
 
 namespace E_commerce_Web_App_Backend_Services.Controllers
 {
+
+    /// <summary>
+    /// Handles authentication operations including user login and registration.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthController"/> class.
+        /// </summary>
+        /// <param name="authService">The authentication service used for login and registration.</param>
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
+
+        /// <summary>
+        /// Authenticates a user and returns a JWT token upon successful login.
+        /// </summary>
+        /// <param name="loginDTO">The user login data transfer object containing email and password.</param>
+        /// <returns>An IActionResult containing the JWT token or an unauthorized message.</returns>
         [HttpPost("login")]
         public IActionResult Login([FromBody] UserLoginDTO loginDTO)
         {
@@ -37,8 +52,14 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             }
         }
 
+
+
+        /// <summary>
+        /// Registers a new user in the system.
+        /// </summary>
+        /// <param name="registerDTO">The user registration data transfer object containing user details.</param>
+        /// <returns>An IActionResult indicating the success or failure of the registration.</returns>
         [HttpPost("register")]
-        //[Authorize(Roles = "Administrator")]  // Only Admins can register users
         public IActionResult Register([FromBody] UserRegisterDTO registerDTO)
         {
             try
