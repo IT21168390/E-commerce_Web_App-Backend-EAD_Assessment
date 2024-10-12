@@ -9,9 +9,11 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 {
     public class OrderService : IOrderService
     {
+        // MongoDB collections
         private readonly IMongoCollection<Order> _ordersCollection;
         private readonly IMongoCollection<User> _usersCollection;
         private readonly IMongoCollection<Product> _productsCollection;
+        // Services dependencies
         private readonly IProductService _productService;
         private readonly IInventoryService _inventoryService;
         private readonly INotificationService _notificationService;
@@ -20,16 +22,27 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                             IProductService productService,
                             IInventoryService inventoryService, INotificationService notificationService)
         {
+            // Set up MongoDB client and retrieve necessary collections
             var client = new MongoClient(dbSettings.Value.ConnectionString);
             var database = client.GetDatabase(dbSettings.Value.DatabaseName);
             _usersCollection = database.GetCollection<User>(dbSettings.Value.UserCollectionName);
             _ordersCollection = database.GetCollection<Order>(dbSettings.Value.OrdersCollectionName);
             _productsCollection = database.GetCollection<Product>(dbSettings.Value.ProductCollectionName);
+            
+            // Assign service dependencies
             _productService = productService;
             _inventoryService = inventoryService;
             _notificationService = notificationService;
         }
 
+
+        /// <summary>
+        /// Places an order based on provided order details.
+        /// </summary>
+        /// <param name="placeOrderDto">The details of the order to be placed.</param>
+        /// <returns>The placed order.</returns>
+        /// <exception cref="ArgumentException">Thrown if the customer ID or product ID is invalid, or if the quantity is less than or equal to zero.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is insufficient stock for any product.</exception>
         public async Task<Order> PlaceOrderAsync(PlaceOrderDto placeOrderDto)
         {
             // Validate CustomerId
@@ -68,10 +81,6 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                     throw new InvalidOperationException($"Insufficient stock for product: {product.Name}");
                 }
 
-                // Deduct stock
-                /*inventory.StockQuantity -= itemDto.Quantity;
-                await _inventoryService.UpdateInventoryAsync(inventory);*/
-
                 // Calculate total
                 totalAmount += product.Price * itemDto.Quantity;
 
@@ -91,7 +100,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                     vendorStatusDict[product.VendorId] = new VendorOrderStatus
                     {
                         VendorId = product.VendorId,
-                        Status = "Processing"
+                        Status = Constant.PROCESSING
                     };
                 }
             }
@@ -121,41 +130,6 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         }
 
 
-        /// <summary>
-        /// Cancels an existing order if it is in the "Processing" status.
-        /// </summary>
-        /// <param name="orderId">The ID of the order to cancel.</param>
-        /// <returns>The updated order with status set to "Cancelled".</returns>
-        /// <exception cref="ArgumentException">Thrown if the order is not in a cancellable status.</exception>
-        /// <exception cref="KeyNotFoundException">Thrown if the order does not exist.</exception>
-        /*public async Task<Order> CancelOrderAsync(string orderId)
-        {
-            Order order = await _ordersCollection.Find(Order => Order.Id == orderId).FirstOrDefaultAsync();
-            if(order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == "Delivered"))
-            {
-                var update = Builders<Order>.Update
-                                            .Set(o => o.OrderStatus, "Cancelled")
-                                            .Set(o => o.UpdatedAt, DateTime.UtcNow);
-                order.OrderStatus = "Cancelled";
-                var result = await _ordersCollection.UpdateOneAsync(Order => Order.Id == orderId, update);
-                if (result.ModifiedCount == 0)
-                {
-                    throw new Exception("Failed to update the order status.");
-                }
-                // Retrieve the updated order
-                order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
-                return order;
-            }
-            else if (order != null)
-            {
-                throw new ArgumentException($"Order is already in {order.OrderStatus} status, cannot be cancelled.");
-            }
-            else
-            {
-                throw new ArgumentException($"Order not found.");
-            }
-        }*/
-
 
         /// <summary>
         /// Initiates a cancellation request for an order.
@@ -167,16 +141,41 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<Order> RequestCancelOrderAsync(string orderId)
         {
             var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
-            if (order != null && !(order.OrderStatus == "Dispatched" || order.OrderStatus == "Delivered"))
+            if (order != null && !(order.OrderStatus == Constant.DISPATCHED || order.OrderStatus == Constant.DELIVERED))
             {
                 var update = Builders<Order>.Update
-                                            .Set(o => o.OrderStatus, "Cancellation Requested")
+                                            .Set(o => o.OrderStatus, Constant.CANCEL_REQUESTED)
                                             .Set(o => o.UpdatedAt, DateTime.UtcNow);
                 var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, update);
                 if (result.ModifiedCount == 0)
                 {
                     throw new Exception("Failed to update the order status.");
                 }
+                //***notification***//
+                if (_notificationService != null)
+                {
+                    var adminUsers = await _usersCollection.Find(u => u.UserType == Constant.ADMIN).ToListAsync();
+                                      
+                    foreach (var admin in adminUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = admin.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
+                    var csrUsers = await _usersCollection.Find(u => u.UserType == Constant.CSR).ToListAsync();
+
+                    foreach (var csr in csrUsers)
+                    {
+                        await _notificationService.CreateNotification(new Notification
+                        {
+                            UserId = csr.Id,
+                            Message = $"Order Id :{order.Id} has a cancellation request."
+                        });
+                    }
+                }
+                else { throw new InvalidOperationException("Notification service is not initialized.");}
 
                 // Retrieve the updated order
                 order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
@@ -203,10 +202,10 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         public async Task<Order> ConfirmCancelOrderAsync(string orderId)
         {
             var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
-            if (order != null && order.OrderStatus == "Cancellation Requested")
+            if (order != null && order.OrderStatus == Constant.CANCEL_REQUESTED)
             {
                 var update = Builders<Order>.Update
-                                            .Set(o => o.OrderStatus, "Cancelled")
+                                            .Set(o => o.OrderStatus, Constant.CANCELLED)
                                             .Set(o => o.UpdatedAt, DateTime.UtcNow);
                 var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, update);
                 if (result.ModifiedCount == 0)
@@ -242,6 +241,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        /// <summary>
+        /// Updates an existing order based on provided update details.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to update.</param>
+        /// <param name="updateOrderDto">The details of the order to be updated.</param>
+        /// <returns>The updated order.</returns>
+        /// <exception cref="ArgumentException">Thrown if the order or product ID is invalid or if the order is not found.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is insufficient stock for any product.</exception>
         public async Task<Order> UpdateOrderAsync(string orderId, UpdateOrderDto updateOrderDto)
         {
             // Validate OrderId
@@ -339,7 +346,15 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
-
+        /// <summary>
+        /// Updates the status of an order to "Dispatched" and adjusts inventory accordingly.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to be dispatched.</param>
+        /// <returns>The updated order after dispatch.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown if the order does not exist.</exception>
+        /// <exception cref="ArgumentException">Thrown if the order is not in a "Pending" status.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if there is insufficient stock for any product in the order.</exception>
+        /// <exception cref="Exception">Thrown if the order status update fails.</exception>
         public async Task<Order> DispatchOrderStatusAsync(string orderId)
         {
             // Find the order
@@ -352,13 +367,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
             // Find the status in the order
             var orderStatus = order.OrderStatus;
-            if (orderStatus != "Pending")
+            if (orderStatus != Constant.PENDING)
             {
                 throw new ArgumentException("Only Pending orders can be marked as Dispatched");
             }
 
             // Update the order status to "Dispatched"
-            var updateDefinition = Builders<Order>.Update.Set(o => o.OrderStatus, "Dispatched");
+            var updateDefinition = Builders<Order>.Update.Set(o => o.OrderStatus, Constant.DISPATCHED);
             var result = await _ordersCollection.UpdateOneAsync(o => o.Id == orderId, updateDefinition);
 
             // Update the order status
@@ -406,7 +421,17 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
-        public async Task<Order> UpdateVendorOrderStatusAsync(string orderId, string vendorId, string status)
+        /// <summary>
+        /// Updates the vendor-specific status of an order and adjusts the overall order status accordingly.
+        /// Also sends a notification to the customer if the order is fully delivered.
+        /// </summary>
+        /// <param name="orderId">The ID of the order to update.</param>
+        /// <param name="vendorId">The ID of the vendor whose status is being updated.</param>
+        /// <returns>The updated order after vendor status update.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown if the order does not exist.</exception>
+        /// <exception cref="ArgumentException">Thrown if the vendor is not associated with the order.</exception>
+        /// <exception cref="Exception">Thrown if the vendor status update fails.</exception>
+        public async Task<Order> UpdateVendorOrderStatusAsync(string orderId, string vendorId)
         {
             // Find the order
             var order = await _ordersCollection.Find(o => o.Id == orderId).FirstOrDefaultAsync();
@@ -423,12 +448,12 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             }
 
             // Update the vendor status
-            vendorStatus.Status = status;
+            vendorStatus.Status = Constant.DELIVERED;
 
             // Update the order status
-            if (order.VendorStatus.All(vs => vs.Status == "Delivered"))
+            if (order.VendorStatus.All(vs => vs.Status == Constant.DELIVERED))
             {
-                order.OrderStatus = "Delivered";
+                order.OrderStatus = Constant.DELIVERED;
                 //***notification***//
                 if (_notificationService != null)
                 {
@@ -439,9 +464,9 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                    });
                 }
             }
-            else if (order.VendorStatus.Any(vs => vs.Status == "Delivered"))
+            else if (order.VendorStatus.Any(vs => vs.Status == Constant.DELIVERED))
             {
-                order.OrderStatus = "Partially Delivered";
+                order.OrderStatus = Constant.PARTIALLY_DELIVERED;
             }
 
             // Update the order in the database
@@ -579,6 +604,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
 
 
+        /// <summary>
+        /// Retrieves all orders that include items from a specific vendor, with optional pagination.
+        /// </summary>
+        /// <param name="vendorId">The ID of the vendor whose orders are to be retrieved.</param>
+        /// <param name="pageNumber">The page number for pagination (default is 1).</param>
+        /// <param name="pageSize">The number of orders per page (default is 10).</param>
+        /// <returns>A list of orders containing items from the specified vendor.</returns>
+        /// <exception cref="ArgumentException">Thrown if the vendor ID is invalid.</exception>
         public async Task<List<Order>> GetOrdersByVendorIdAsync(string vendorId, int pageNumber = 1, int pageSize = 10)
         {
             // Get all orders that contain items from the vendor

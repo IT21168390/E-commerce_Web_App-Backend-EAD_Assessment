@@ -5,7 +5,6 @@ using E_commerce_Web_App_Backend_Services.ServicesImpl;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace E_commerce_Web_App_Backend_Services.Controllers
 {
@@ -20,14 +19,26 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             this.productService = productService;
         }
 
-        // GET: api/<ProductController>
+
+        // GET: api/<ProductController>/GetAllProductList
+        /// <summary>
+        /// Retrieves a list of all products.
+        /// </summary>
+        /// <returns>List of ProductDTO objects containing product information.</returns>
         [HttpGet("GetAllProductList")]
-        public ActionResult<List<Product>> Get()
+        public ActionResult<List<ProductDTO>> Get()
         {
             return productService.GetAllProductList();
         }
 
-        // GET api/<ProductController>/5
+
+
+        // GET api/<ProductController>/GetProductById/{id}
+        /// <summary>
+        /// Retrieves a product by its unique ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the product.</param>
+        /// <returns>A Product object if found, otherwise a NotFound result.</returns>
         [HttpGet("GetProductById/{id}")]
         public ActionResult<Product> Get(string id)
         {
@@ -41,9 +52,16 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return product;
         }
 
-        // POST api/<ProductController>
+
+
+        // POST api/<ProductController>/AddProduct
+        /// <summary>
+        /// Adds a new product to the product list.
+        /// </summary>
+        /// <param name="product">The ProductDTO object containing the details of the product to be added.</param>
+        /// <returns>The created Product object with status 201 Created.</returns>
         [HttpPost("AddProduct")]
-        [Authorize(Roles = "Vendor")]
+       [Authorize(Roles = "Vendor")]
         public ActionResult<Product> Post([FromBody] ProductDTO product)
         {
             productService.AddProduct(product);
@@ -51,7 +69,15 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
         }
 
-        // PUT api/<ProductController>/5
+
+
+        // PUT api/<ProductController>/UpdateProductById/{id}
+        /// <summary>
+        /// Updates an existing product by its ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the product to be updated.</param>
+        /// <param name="product">The updated Product object.</param>
+        /// <returns>No content if the update is successful, otherwise NotFound result if the product does not exist.</returns>
         [HttpPut("UpdateProductById/{id}")]
         [Authorize(Roles = "Vendor")]
         public ActionResult Put(string id, [FromBody] Product product)
@@ -68,7 +94,13 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return NoContent();
         }
 
-        // DELETE api/<ProductController>/5
+
+        // DELETE api/<ProductController>/RemoveProductById/{id}
+        /// <summary>
+        /// Removes a product by its unique ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the product to be removed.</param>
+        /// <returns>Ok result if the deletion is successful, otherwise NotFound result if the product does not exist.</returns>
         [HttpDelete("RemoveProductById/{id}")]
         [Authorize(Roles = "Vendor")]
         public ActionResult Delete(string id)
@@ -85,7 +117,15 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return Ok($"Product with ID = {id} deleted");
         }
 
-        // Activate/Deactivate a product by Product ID
+
+
+        // PUT api/<ProductController>/UpdateProductStatusById/{id}
+        /// <summary>
+        /// Activates or deactivates a product by its unique ID.
+        /// </summary>
+        /// <param name="id">The unique identifier of the product to update.</param>
+        /// <param name="status">The new status for the product ("Active" or "Inactive").</param>
+        /// <returns>Ok result if the status update is successful, otherwise NotFound result if the product does not exist.</returns>
         [HttpPut("UpdateProductStatusById/{id}")]
         [Authorize(Roles = "Administrator")]
         public ActionResult UpdateProductStatusById(string id, [FromQuery] string status)
@@ -100,7 +140,16 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
             return Ok($"Product with ID = {id} status updated to {status}");
         }
 
-        // Activate/Deactivate products by Vendor ID and Category
+
+
+        // PUT api/<ProductController>/UpdateProductsStatusByVendorAndCategory
+        /// <summary>
+        /// Activates or deactivates products by vendor ID and category.
+        /// </summary>
+        /// <param name="vendorId">The ID of the vendor whose products are to be updated.</param>
+        /// <param name="category">The category of products to be updated.</param>
+        /// <param name="status">The new status for the products ("Active" or "Inactive").</param>
+        /// <returns>Ok result indicating the status update was successful for the specified products.</returns>
         [HttpPut("UpdateProductsStatusByVendorAndCategory")]
         [Authorize(Roles = "Administrator")]
         public ActionResult UpdateProductsStatusByVendorAndCategory([FromQuery] string vendorId, [FromQuery] string category, [FromQuery] string status)
