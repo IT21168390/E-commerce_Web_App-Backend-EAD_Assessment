@@ -11,7 +11,12 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         private readonly IMongoCollection<Inventory> _inventory;
         private readonly IMongoCollection<User> _user;
 
-        // Constructor to initialize the ProductService with MongoDB collections for products, inventory, and users
+
+        /// <summary>
+        /// Constructor to initialize the ProductService with MongoDB collections for products, inventory, and users.
+        /// </summary>
+        /// <param name="settings">The database settings containing connection information.</param>
+        /// <param name="mongoClient">The MongoDB client used to connect to the database.</param>
         public ProductService(IDatabaseSettings settings, IMongoClient mongoClient) 
         {
             var database = mongoClient.GetDatabase(settings.DatabaseName);
@@ -20,7 +25,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             _user = database.GetCollection<User>(settings.UserCollectionName);
         }
 
-        // Adds a new product to the database along with its inventory details
+
+
+        /// <summary>
+        /// Adds a new product to the database along with its inventory details.
+        /// </summary>
+        /// <param name="newProduct">The product data transfer object (DTO) containing product details.</param>
+        /// <returns>The created Product object.</returns>
         public Product AddProduct(ProductDTO newProduct)
         {
             // Create a Product object from the ProductDTO
@@ -50,7 +61,10 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         }
 
 
-        // Retrieves a list of all products with their associated vendor names and inventory quantities
+        /// <summary>
+        /// Retrieves a list of all products with their associated vendor names and inventory quantities.
+        /// </summary>
+        /// <returns>A list of ProductDTOs with product, vendor, and inventory details.</returns>
         public List<ProductDTO> GetAllProductList()
         {
             // Get all products from the database
@@ -81,32 +95,61 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         }
 
 
-        // Retrieves a product by its ID
+
+
+        /// <summary>
+        /// Retrieves a product by its ID from the database.
+        /// </summary>
+        /// <param name="id">The ID of the product to be retrieved.</param>
+        /// <returns>The product with the specified ID, or null if not found.</returns>
         public Product GetProductById(string id)
         {
             return _products.Find(Product => Product.Id == id).FirstOrDefault();
         }
 
-        // Removes a product from the database by its ID
+
+
+        /// <summary>
+        /// Removes a product from the database by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the product to be deleted.</param>
         public void RemoveProductById(string id)
         {
             _products.DeleteOne(Product => Product.Id == id);
         }
 
-        // Updates a product in the database by replacing it with a new product object
+
+        /// <summary>
+        /// Updates a product in the database by replacing it with a new product object.
+        /// </summary>
+        /// <param name="id">The ID of the product to be updated.</param>
+        /// <param name="product">The updated Product object.</param>
         public void UpdateProductById(string id, Product product)
         {
             _products.ReplaceOne(Product => Product.Id == id, product);
         }
 
-        /// Updates the status (e.g., "Active", "Inactive") of a product by its ID
+
+
+        /// <summary>
+        /// Updates the status (e.g., "Active", "Inactive") of a product by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the product whose status is to be updated.</param>
+        /// <param name="status">The new status to set for the product.</param>
         public void UpdateProductStatusById(string id, string status)
         {
             var update = Builders<Product>.Update.Set(p => p.Status, status);
             _products.UpdateOne(p => p.Id == id, update);
         }
 
-        // Method to Activate/Deactivate products by Vendor ID and Category
+
+
+        /// <summary>
+        /// Activates or deactivates products by Vendor ID and Category.
+        /// </summary>
+        /// <param name="vendorId">The ID of the vendor.</param>
+        /// <param name="category">The category of the products to be updated.</param>
+        /// <param name="status">The new status to set for the matching products.</param>
         public void UpdateProductsStatusByVendorAndCategory(string vendorId, string category, string status)
         {
             // Create a filter to find products matching the given vendor ID and category

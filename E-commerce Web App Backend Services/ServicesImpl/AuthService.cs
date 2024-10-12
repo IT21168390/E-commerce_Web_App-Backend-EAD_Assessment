@@ -10,6 +10,10 @@ using System.Text;
 
 namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 {
+
+    /// <summary>
+    /// Provides authentication services for user login and registration.
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IMongoCollection<User> _users;
@@ -17,6 +21,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         private readonly string _jwtIssuer;
         private readonly string _jwtAudience;
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthService"/> class.
+        /// </summary>
+        /// <param name="settings">The database settings.</param>
+        /// <param name="mongoClient">The MongoDB client.</param>
+        /// <param name="config">The configuration settings.</param>
         public AuthService(IDatabaseSettings settings, IMongoClient mongoClient, IConfiguration config)
         {
             var database = mongoClient.GetDatabase(settings.DatabaseName);
