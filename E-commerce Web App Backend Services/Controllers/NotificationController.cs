@@ -83,6 +83,18 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         }
 
         /// <summary>
+        /// Get a specific unread notification count by userId.
+        /// </summary>
+        /// <param name="userId">The ID of the user that need to get notification count.</param>
+        /// <returns>No of count in integer.</returns>
+        [HttpGet("user/{userId}/unread-count")]
+        public async Task<ActionResult<int>> GetUnreadNotificationCount(string userId)
+        {
+            var count = await _notificationService.GetUnreadNotificationCount(userId);
+            return Ok(count);
+        }
+
+        /// <summary>
         /// Deletes a specific notification by ID.
         /// </summary>
         /// <param name="id">The ID of the notification to delete.</param>

@@ -72,6 +72,20 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         }
 
         /// <summary>
+        /// Gets the count of unread notifications for a specific user by user ID.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>The count of unread notifications for the specified user.</returns>
+        public async Task<int> GetUnreadNotificationCount(string userId)
+        {
+            // Create a filter to find notifications that belong to the user and are unread
+            var filter = Builders<Notification>.Filter.Eq(n => n.UserId, userId) & Builders<Notification>.Filter.Eq(n => n.IsRead, false);
+
+            // Count the documents that match the filter and return the count
+            return (int)await _notifications.CountDocumentsAsync(filter);
+        }
+
+        /// <summary>
         /// Deletes a specific notification by ID.
         /// </summary>
         /// <param name="notificationId">The ID of the notification to delete.</param>
