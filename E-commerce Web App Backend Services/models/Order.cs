@@ -19,7 +19,7 @@ namespace E_commerce_Web_App_Backend_Services.models
         public string CustomerName { get; set; }
 
         [BsonElement("order_status")]
-        public string OrderStatus { get; set; } = Constant.PROCESSING;
+        public string OrderStatus { get; set; } = Constant.PENDING;
 
         [BsonElement("order_items")]
         public List<OrderItem> OrderItems { get; set; }

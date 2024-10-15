@@ -50,15 +50,29 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Add CORS support
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowAllOrigins", policy =>
+//    {
+//        policy.AllowAnyOrigin()
+//              .AllowAnyMethod()
+//              .AllowAnyHeader();
+//    });
+
+
+//});
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
 });
+
+//var app = builder.Build();
+
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -74,7 +88,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAllOrigins");
+//app.UseCors("AllowAllOrigins");
+// Configure the HTTP request pipeline.
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

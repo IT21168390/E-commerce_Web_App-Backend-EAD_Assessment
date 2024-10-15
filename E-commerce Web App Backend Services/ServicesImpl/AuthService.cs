@@ -10,6 +10,10 @@ using System.Text;
 
 namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 {
+
+    /// <summary>
+    /// Provides authentication services for user login and registration.
+    /// </summary>
     public class AuthService : IAuthService
     {
         private readonly IMongoCollection<User> _users;
@@ -17,6 +21,13 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         private readonly string _jwtIssuer;
         private readonly string _jwtAudience;
 
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthService"/> class.
+        /// </summary>
+        /// <param name="settings">The database settings.</param>
+        /// <param name="mongoClient">The MongoDB client.</param>
+        /// <param name="config">The configuration settings.</param>
         public AuthService(IDatabaseSettings settings, IMongoClient mongoClient, IConfiguration config)
         {
             var database = mongoClient.GetDatabase(settings.DatabaseName);
@@ -26,6 +37,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             _jwtAudience = config["JwtSettings:Audience"];
         }
 
+        // Method to authenticate a user
         public string Authenticate(UserLoginDTO userLoginDTO)
         {
             // Find the user by email
@@ -59,6 +71,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             return tokenHandler.WriteToken(token);
         }
 
+        // Method to register a user
         public User Register(UserRegisterDTO userRegisterDTO)
         {
             var user = new User
@@ -66,7 +79,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 Name = userRegisterDTO.Name,
                 Email = userRegisterDTO.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(userRegisterDTO.Password),  // Hashing the password
-                UserType = userRegisterDTO.UserType
+                UserType = userRegisterDTO.UserType,
+                //Address = new Address
+                //{
+                //    Street = userRegisterDTO.Address.Street,
+                //    City = userRegisterDTO.Address.City,
+                //    ZipCode = userRegisterDTO.Address.ZipCode
+                //},
+                AccountCreatedAt = DateTime.UtcNow
             };
 
             // Set default status for customers and vendors

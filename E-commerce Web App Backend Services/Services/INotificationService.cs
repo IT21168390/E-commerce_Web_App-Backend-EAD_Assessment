@@ -7,6 +7,7 @@ namespace E_commerce_Web_App_Backend_Services.Services
             Task<Notification> GetNotificationById(string notificationId);
             Task<IEnumerable<Notification>> GetAllNotificationsByUserId(string userId);
             Task<bool> MarkAsRead(string notificationId);
+            Task<int> GetUnreadNotificationCount(string userId);
             Task<bool> DeleteNotification(string notificationId);
         }
 }
