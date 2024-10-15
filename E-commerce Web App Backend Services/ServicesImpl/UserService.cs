@@ -1,4 +1,5 @@
-﻿using E_commerce_Web_App_Backend_Services.models;
+﻿using E_commerce_Web_App_Backend_Services.Dto;
+using E_commerce_Web_App_Backend_Services.models;
 using E_commerce_Web_App_Backend_Services.Services;
 using MongoDB.Driver;
 
@@ -126,6 +127,15 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
                 user.Id = existingUser.Id; // Ensure the _id field is set
                 _users.ReplaceOne(u => u.Id == id, user);
             }
+        }
+
+        public void UpdateUserById(UserDTO user)
+        {
+            var existingUser = _users.Find(u => u.Id == user.Id).FirstOrDefault();
+
+
+            existingUser.Name = user.Name;
+            _users.ReplaceOne(u => u.Id == user.Id, existingUser);
         }
 
     }
