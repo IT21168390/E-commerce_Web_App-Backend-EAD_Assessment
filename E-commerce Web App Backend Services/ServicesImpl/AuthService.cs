@@ -38,7 +38,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
         }
 
         // Method to authenticate a user
-        public string Authenticate(UserLoginDTO userLoginDTO)
+        public AuthResponseDTO Authenticate(UserLoginDTO userLoginDTO)
         {
             // Find the user by email
             var user = _users.Find(u => u.Email == userLoginDTO.Email).FirstOrDefault();
@@ -68,7 +68,14 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            
+            // Return an object containing the token, user ID, and name
+            return new AuthResponseDTO()
+            {
+                Token = tokenHandler.WriteToken(token),
+                UserId = user.Id,
+                UserName = user.Name
+            };
         }
 
         // Method to register a user

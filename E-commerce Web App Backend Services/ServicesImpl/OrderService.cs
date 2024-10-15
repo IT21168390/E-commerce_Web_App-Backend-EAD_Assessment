@@ -654,7 +654,7 @@ namespace E_commerce_Web_App_Backend_Services.ServicesImpl
 
         private bool IsProductFromVendor(string productId, string vendorId)
         {
-            // This is a placeholder function. Replace with actual MongoDB query logic to check product's vendor.
+            // MongoDB query logic to check product's vendor.
             var product = _productsCollection.Find(p => p.Id == productId).FirstOrDefault();
             return product != null && product.VendorId == vendorId;
         }

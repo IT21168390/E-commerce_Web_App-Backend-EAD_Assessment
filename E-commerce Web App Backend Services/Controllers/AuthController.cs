@@ -38,12 +38,13 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         {
             try
             {
-                var token = _authService.Authenticate(loginDTO);
-                if (token == null)
+                AuthResponseDTO authResult = _authService.Authenticate(loginDTO);
+                if (authResult == null)
                 {
                     return Unauthorized(new { Message = "Invalid email or password." });
                 }
-                return Ok(new { Token = token });
+                // Return the token, userId, and name
+                return Ok(new { Token = authResult.Token, userId = authResult.UserId, name = authResult.UserName });
             }
             catch (Exception ex)
             {
