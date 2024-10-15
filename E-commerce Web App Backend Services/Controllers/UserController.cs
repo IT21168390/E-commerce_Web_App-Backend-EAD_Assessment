@@ -1,4 +1,5 @@
-﻿using E_commerce_Web_App_Backend_Services.Services;
+﻿using E_commerce_Web_App_Backend_Services.Dto;
+using E_commerce_Web_App_Backend_Services.Services;
 using E_commerce_Web_App_Backend_Services.ServicesImpl;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -82,6 +83,23 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
 
             return NoContent();
         }
+
+        // PUT api/<UserController>/updateById/{id}
+        [HttpPut("updateName")]
+        public ActionResult UpdateById([FromBody] UserDTO user)
+        {
+            var existingUser = userService.Get(user.Id);
+
+            if (existingUser == null)
+            {
+                return NotFound($"User with ID = {user.Id} not found");
+            }
+
+            userService.UpdateUserById(user);
+
+            return NoContent();
+        }
+
 
         // DELETE api/<UserController>/{id}
         [HttpDelete("{id}")]

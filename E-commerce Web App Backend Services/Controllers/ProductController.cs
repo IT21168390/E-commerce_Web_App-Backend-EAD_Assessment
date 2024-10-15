@@ -61,7 +61,7 @@ namespace E_commerce_Web_App_Backend_Services.Controllers
         /// <param name="product">The ProductDTO object containing the details of the product to be added.</param>
         /// <returns>The created Product object with status 201 Created.</returns>
         [HttpPost("AddProduct")]
-       [Authorize(Roles = "Vendor")]
+        [Authorize(Roles = "Vendor")]
         public ActionResult<Product> Post([FromBody] ProductDTO product)
         {
             productService.AddProduct(product);
